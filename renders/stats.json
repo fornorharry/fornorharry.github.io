@@ -40,5 +40,19 @@
       1500
     ],
     "wire_seconds": 4.0
+  },
+  "pistol": {
+    "tris": 34146,
+    "verts": 17326,
+    "objects": 20,
+    "materials": 19,
+    "render_seconds": 10.6,
+    "device": "OPTIX",
+    "samples": 640,
+    "resolution": [
+      2400,
+      1500
+    ],
+    "wire_seconds": 3.5
   }
 }
