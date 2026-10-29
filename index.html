@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Littleball91: Roblox Luau systems (combat, player data, monetization) with real Studio test results, an exploit review, and Blender renders.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Littleball91 · Luau Systems Portfolio">
+<meta property="og:description" content="Littleball91: Roblox Luau systems (combat, player data, monetization) with real Studio test results, an exploit review, and Blender renders.">
+<meta property="og:url" content="https://fornorharry.github.io/">
+<meta property="og:image" content="https://fornorharry.github.io/renders/potion.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141924'/%3E%3Crect x='11' y='11' width='10' height='10' rx='2' fill='%2356a0ff'/%3E%3C/svg%3E">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Luau Systems Portfolio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Layout: a Studio-console shell. Sticky utility bar, a thesis hero with real counts,
+     three systems built like spec sheets with their own Studio test logs, an exploit table,
+     a gallery of Blender renders, then rates. */
+  :root{
+    --bg:#f4f6fa; --panel:#ffffff; --panel-2:#eef1f7; --line:#d6dce7;
+    --fg:#141922; --muted:#55616f; --faint:#7f8b9b;
+    --accent:#1f6dff; --accent-weak:#dbe6ff; --signal:#b86a10; --signal-weak:#fbecd6;
+    --ok:#1d7f47; --ok-weak:#dcf2e5;
+    --console:#10141c; --console-line:#232a37; --console-fg:#d6dde8; --console-dim:#7d8899;
+    --console-ok:#5fd18f; --console-warn:#f0b35c; --console-key:#7cb4ff; --console-str:#e8c48a;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --disp:"Chakra Petch",system-ui,sans-serif;
+    --body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    --maxw:1080px;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0c0f15; --panel:#141924; --panel-2:#1b212e; --line:#28303f;
+    --fg:#e7ecf4; --muted:#9aa6b8; --faint:#6b7687;
+    --accent:#56a0ff; --accent-weak:#16243d; --signal:#e2a14b; --signal-weak:#2e2210;
+    --ok:#4fc27e; --ok-weak:#12291c;
+    --console:#080b10; --console-line:#1d2430;
+    color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#0c0f15; --panel:#141924; --panel-2:#1b212e; --line:#28303f;
+    --fg:#e7ecf4; --muted:#9aa6b8; --faint:#6b7687;
+    --accent:#56a0ff; --accent-weak:#16243d; --signal:#e2a14b; --signal-weak:#2e2210;
+    --ok:#4fc27e; --ok-weak:#12291c;
+    --console:#080b10; --console-line:#1d2430;
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.55;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  h1,h2,h3{font-family:var(--disp);text-wrap:balance;margin:0;letter-spacing:.2px}
+  p{margin:0}
+  a{color:inherit}
+  .wrap{width:100%;max-width:var(--maxw);margin-inline:auto;
+    padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+  /* header */
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);
+    background:var(--panel);z-index:40}
+  header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;
+    background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line)}
+  .hbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
+  .brand{font-family:var(--disp);font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:9px;min-width:0}
+  .brand .dot{width:9px;height:9px;border-radius:2px;background:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-weak);flex:none}
+  .nav{display:flex;align-items:center;gap:4px}
+  .nav a{font-family:var(--mono);font-size:.8rem;color:var(--muted);text-decoration:none;
+    padding:7px 10px;border-radius:7px}
+  .nav a:hover{color:var(--fg);background:var(--panel-2)}
+  .tgl{font:inherit;font-family:var(--mono);font-size:.78rem;cursor:pointer;color:var(--muted);
+    background:var(--panel-2);border:1px solid var(--line);border-radius:7px;padding:7px 10px}
+  .tgl:hover{color:var(--fg)}
+  @media (max-width:640px){.nav a.hidesm{display:none}}
+
+  /* hero */
+  .hero{padding-block:clamp(44px,8vw,84px) clamp(28px,5vw,48px)}
+  .hero .eyebrow{margin-bottom:18px}
+  .hero h1{font-size:clamp(2.1rem,6.4vw,4rem);line-height:1.02;font-weight:700;max-width:16ch}
+  .hero h1 .hl{color:var(--accent)}
+  .lede{margin-top:20px;max-width:62ch;font-size:clamp(1rem,2.4vw,1.15rem);color:var(--muted)}
+  .cta-row{margin-top:28px;display:flex;flex-wrap:wrap;gap:12px}
+  .btn{font-family:var(--mono);font-size:.86rem;font-weight:500;text-decoration:none;cursor:pointer;
+    padding:12px 18px;border-radius:9px;border:1px solid transparent;display:inline-flex;align-items:center;gap:8px}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(1.07)}
+  .btn.ghost{border-color:var(--line);color:var(--fg)}
+  .btn.ghost:hover{background:var(--panel-2)}
+  .counts{margin-top:36px;display:flex;flex-wrap:wrap;gap:12px 36px}
+  .count{display:flex;align-items:baseline;gap:9px}
+  .count b{font-family:var(--disp);font-size:1.7rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+  .count span{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+
+  /* stack strip */
+  .strip{border-block:1px solid var(--line);background:var(--panel)}
+  .strip .wrap{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding-block:16px}
+  .strip .lbl{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .chip{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+  .chip b{color:var(--fg);font-weight:600}
+
+  /* sections */
+  section{padding-block:clamp(40px,6vw,68px)}
+  .band{background:var(--panel-2);border-block:1px solid var(--line)}
+  .sechead{display:flex;align-items:baseline;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;margin-bottom:26px}
+  .sechead h2{font-size:clamp(1.5rem,3.6vw,2.2rem);font-weight:600}
+  .sechead p{color:var(--muted);max-width:46ch;font-size:.95rem}
+
+  /* system cards */
+  .systems{display:flex;flex-direction:column;gap:22px}
+  .sys{border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;
+    display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
+  @media (max-width:820px){.sys{grid-template-columns:1fr}}
+  .sys-body{padding:clamp(20px,3vw,30px);min-width:0;display:flex;flex-direction:column;gap:16px}
+  .sys-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+  .sys-no{font-family:var(--mono);font-size:.74rem;color:var(--accent);letter-spacing:.14em}
+  .sys-meta{font-family:var(--mono);font-size:.72rem;color:var(--faint)}
+  .sys h3{font-size:1.55rem;font-weight:700;margin-top:-6px}
+  .sys .desc{color:var(--muted);font-size:.95rem;max-width:56ch}
+  .feat{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+  .feat li{font-family:var(--mono);font-size:.8rem;display:flex;gap:10px;align-items:flex-start;min-width:0}
+  .feat li::before{content:"▹";color:var(--accent);flex:none}
+  details.code{border:1px solid var(--line);border-radius:10px;background:var(--panel-2);min-width:0}
+  details.code summary{cursor:pointer;font-family:var(--mono);font-size:.78rem;color:var(--fg);
+    padding:10px 14px;list-style:none;display:flex;justify-content:space-between;gap:10px}
+  details.code summary::-webkit-details-marker{display:none}
+  details.code summary::after{content:"+";color:var(--accent)}
+  details.code[open] summary::after{content:"–"}
+  details.code summary span{color:var(--faint)}
+  pre{margin:0;overflow-x:auto;font-family:var(--mono);font-size:.76rem;line-height:1.6;tab-size:4}
+  details.code pre{padding:0 14px 14px;color:var(--fg)}
+  .k{color:var(--accent);font-weight:600}
+  .s{color:var(--signal)}
+  .c{color:var(--faint);font-style:italic}
+
+  /* studio test log */
+  .log{background:var(--console);color:var(--console-fg);border-left:1px solid var(--line);
+    display:flex;flex-direction:column;min-width:0}
+  @media (max-width:820px){.log{border-left:0;border-top:1px solid var(--line)}}
+  .log-head{display:flex;justify-content:space-between;gap:10px;align-items:center;
+    padding:12px 16px;border-bottom:1px solid var(--console-line);font-family:var(--mono);font-size:.72rem;color:var(--console-dim)}
+  .log-head .live{display:flex;align-items:center;gap:7px;color:var(--console-ok)}
+  .log-head .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--console-ok)}
+  .log pre{padding:14px 16px 18px;font-size:.74rem;line-height:1.75;flex:1}
+  .log .cmd{color:var(--console-key)}
+  .log .dim{color:var(--console-dim)}
+  .log .okc{color:var(--console-ok)}
+  .log .warn{color:var(--console-warn)}
+
+  /* exploit table */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  table{width:100%;border-collapse:collapse;min-width:640px}
+  th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:top;font-size:.9rem}
+  th{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:500;background:var(--panel-2)}
+  tr:last-child td{border-bottom:0}
+  td.sys-cell{font-family:var(--mono);font-size:.78rem;color:var(--muted);white-space:nowrap}
+  .pill{display:inline-block;font-family:var(--mono);font-size:.7rem;font-weight:600;letter-spacing:.06em;
+    padding:3px 8px;border-radius:999px;margin-right:8px;white-space:nowrap}
+  .pill.blocked{background:var(--ok-weak);color:var(--ok)}
+  .pill.patched{background:var(--signal-weak);color:var(--signal)}
+  .tablenote{margin-top:14px;font-size:.88rem;color:var(--muted);max-width:70ch}
+
+  /* blender */
+  .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  @media (max-width:760px){.gallery{grid-template-columns:1fr}}
+  .render{margin:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel);
+    display:flex;flex-direction:column;min-width:0}
+  .render.wide{grid-column:1/-1}
+  .render img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;background:var(--console)}
+  .render figcaption{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px}
+  .r-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px 16px;flex-wrap:wrap}
+  .r-top h3{font-size:1.2rem;font-weight:700}
+  .r-tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--signal)}
+  .render p{color:var(--muted);font-size:.9rem;max-width:70ch}
+  .r-stats{font-family:var(--mono);font-size:.74rem;color:var(--faint);font-variant-numeric:tabular-nums}
+  .blender-foot{margin-top:34px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:28px;align-items:start}
+  @media (max-width:860px){.blender-foot{grid-template-columns:1fr}}
+  .links{display:flex;flex-direction:column;gap:10px}
+  .links a{font-family:var(--mono);font-size:.8rem;text-decoration:none;padding:11px 14px;border-radius:9px;
+    border:1px solid var(--line);background:var(--panel);display:flex;justify-content:space-between;gap:12px}
+  .links a:hover{border-color:var(--accent)}
+  .links a span{color:var(--faint)}
+  .pipeline{list-style:none;margin:0;padding:0;display:grid;gap:4px;counter-reset:step}
+  .pipeline li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .pipeline li:last-child{border-bottom:0}
+  .pipeline li::before{counter-increment:step;content:counter(step,decimal-leading-zero);
+    font-family:var(--mono);font-size:.8rem;color:var(--signal);grid-row:span 2;padding-top:2px}
+  .pipeline h3{font-size:1.05rem;font-weight:600}
+  .pipeline p{color:var(--muted);font-size:.9rem}
+  .pipeline code{font-family:var(--mono);font-size:.8em;background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+
+  /* rates + process */
+  .rates{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+  .rate{border:1px solid var(--line);border-radius:13px;padding:20px 18px;background:var(--panel)}
+  .rate .tier{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .rate .price{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:10px 0 4px;font-variant-numeric:tabular-nums}
+  .rate .ex{color:var(--muted);font-size:.84rem}
+  .rate.feature{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .steps{margin-top:44px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px}
+  .step .n{font-family:var(--mono);color:var(--accent);font-size:.8rem}
+  .step h3{font-size:1.05rem;font-weight:600;margin:8px 0 6px}
+  .step p{color:var(--muted);font-size:.9rem}
+  .closing{margin-top:40px;padding:22px 24px;border:1px solid var(--line);border-radius:14px;background:var(--panel);
+    display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between}
+  .closing h3{font-size:1.25rem;font-weight:600}
+  .closing p{color:var(--muted);font-size:.92rem;max-width:58ch}
+
+  footer{border-top:1px solid var(--line)}
+  footer .wrap{padding-block:26px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:.74rem;color:var(--faint)}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hbar">
+    <div class="brand"><span class="dot"></span>Littleball91</div>
+    <nav class="nav" aria-label="Sections">
+      <a href="#systems" class="hidesm">Systems</a>
+      <a href="#tested" class="hidesm">Tested</a>
+      <a href="#blender" class="hidesm">Blender</a>
+      <a href="#rates">Rates</a>
+      <button class="tgl" id="tgl" type="button" aria-label="Switch between light and dark theme">theme</button>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Roblox · Luau · Server-authoritative</div>
+    <h1>Game systems built to <span class="hl">studio standard.</span></h1>
+    <p class="lede">I build Roblox game systems in strict-typed Luau: combat, player data and monetization that are modular, exploit-tested and ready to ship. Rojo + Git workflow, a README with test steps for every system, and Blender for the 3D side.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="#systems">See the systems →</a>
+      <a class="btn ghost" href="#rates">Rates</a>
+    </div>
+    <div class="counts" aria-label="Portfolio at a glance">
+      <div class="count"><b>3</b><span>production systems</span></div>
+      <div class="count"><b>49</b><span>strict-typed modules</span></div>
+      <div class="count"><b>40</b><span>attacks reviewed</span></div>
+      <div class="count"><b>3/3</b><span>gaps patched &amp; re-tested</span></div>
+      <div class="count"><b>3</b><span>Blender scenes</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="strip">
+  <div class="wrap">
+    <span class="lbl">Stack</span>
+    <span class="chip"><b>Luau</b> (--!strict)</span>
+    <span class="chip"><b>Rojo</b> + Git</span>
+    <span class="chip"><b>DataStores</b></span>
+    <span class="chip"><b>MarketplaceService</b></span>
+    <span class="chip"><b>AnalyticsService</b></span>
+    <span class="chip"><b>Blender</b> + Cycles</span>
+    <span class="chip"><b>Python</b> (bpy)</span>
+    <span class="chip">AI-assisted build</span>
+  </div>
+</div>
+
+<section id="systems">
+  <div class="wrap">
+    <div class="sechead">
+      <h2>Flagship systems</h2>
+      <p>Each one is server-authoritative, typed, and ships with a README. The logs beside each system are results from real Studio test runs.</p>
+    </div>
+    <div class="systems">
+
+      <article class="sys">
+        <div class="sys-body">
+          <div class="sys-top"><span class="sys-no">SYSTEM 01</span><span class="sys-meta">20 modules · Rojo project</span></div>
+          <h3>Combat</h3>
+          <p class="desc">Server-authoritative melee combat. The client asks to attack and the server decides what got hit, with hit-stop and camera feel layered on top.</p>
+          <ul class="feat">
+            <li>4-hit M1 combo with a reset window and final-hit knockback</li>
+            <li>Ground Slam: area damage, knockback and its own 8s cooldown</li>
+            <li>Server hitboxes with range, line-of-sight and spawn-protection checks</li>
+            <li>Hit-stun that cancels the target's own windup</li>
+            <li>Teleport-strike guard, tuned from measured movement speeds</li>
+            <li>Hit-stop, hit flash, camera kick and FOV punch, each switchable in Config</li>
+          </ul>
+          <details class="code">
+            <summary>Teleport-strike guard <span>MovementGuard.luau</span></summary>
+<pre><span class="c">-- Covered more than MaxTravel studs within the window: a teleport, not running.</span>
+<span class="k">if</span> flatDistance(root.Position, samples[1].Position) &gt; settings.MaxTravel <span class="k">then</span>
+	<span class="k">local</span> state = PlayerState.Get(player)
+	<span class="k">if</span> state <span class="k">then</span>
+		state.SuspectUntil = now + settings.Lockout
+	<span class="k">end</span>
+	<span class="c">-- Fresh window, so one teleport counts once.</span>
+	history.Samples = { { Time = now, Position = root.Position } }
+<span class="k">end</span></pre>
+          </details>
+        </div>
+        <div class="log" aria-label="Combat test results">
+          <div class="log-head"><span class="live">Studio test run</span><span>Output</span></div>
+<pre><span class="cmd">&gt; 4-hit combo on a test dummy</span>
+  dummy hp 200 → 192 → 184 → 174 → 160
+  <span class="dim">damage 8 · 8 · 10 · 14, final hit knocks back</span>
+<span class="cmd">&gt; teleport 36 studs, swing 0.3s later</span>
+  <span class="warn">[Combat] Rejected: M1 moved too fast</span>
+<span class="cmd">&gt; same spot after the 1.5s lockout</span>
+  <span class="okc">dummy hp 200 → 192</span>
+<span class="cmd">&gt; 50 attack requests in one frame</span>
+  <span class="okc">0 accepted</span> <span class="dim">· 5 cooldown · 45 rate limited</span>
+<span class="cmd">&gt; camera after shake + kick + FOV punch</span>
+  FOV 70 → 74.48 → <span class="okc">70.00</span> <span class="dim">· drift 0.000°</span></pre>
+        </div>
+      </article>
+
+      <article class="sys">
+        <div class="sys-body">
+          <div class="sys-top"><span class="sys-no">SYSTEM 02</span><span class="sys-meta">16 modules · Rojo project</span></div>
+          <h3>Data &amp; Saving</h3>
+          <p class="desc">Player data that is only ever live on one server, upgrades old saves cleanly, and never writes over a save it can't read.</p>
+          <ul class="feat">
+            <li>Session locking on atomic UpdateAsync, with stale-lock takeover</li>
+            <li>Versioned schema with step-by-step save migrations</li>
+            <li>Staggered autosave, save on leave, parallel save on shutdown</li>
+            <li>Exponential backoff with jitter and request-budget waits</li>
+            <li>Validated server API; owner-only replication; server-only receipts</li>
+            <li>Mock DataStore that fails on purpose, so every load path is testable in Studio</li>
+          </ul>
+          <details class="code">
+            <summary>Session lock check <span>SessionStore.luau</span></summary>
+<pre><span class="k">local</span> owner = meta.LockJobId
+<span class="k">if</span> owner <span class="k">and</span> owner ~= SESSION_ID <span class="k">then</span>
+	<span class="c">-- Another live server owns this save: write nothing, wait and retry.</span>
+	<span class="k">if</span> now - meta.LockTime &lt; session.LockExpiry <span class="k">then</span>
+		status = <span class="s">"Locked"</span>
+		<span class="k">return</span> <span class="k">nil</span>
+	<span class="k">end</span>
+	<span class="c">-- Nobody refreshed it for LockExpiry seconds: its server is gone.</span>
+	detail = <span class="s">`took over a stale lock from {owner}`</span>
+<span class="k">end</span></pre>
+          </details>
+        </div>
+        <div class="log" aria-label="Data system test results">
+          <div class="log-head"><span class="live">Studio test run</span><span>Output</span></div>
+<pre><span class="cmd">&gt; load a version 1 save</span>
+  Cash 250 → <span class="okc">Coins 250</span>, Volume 0.3 → Music 0.3 · Sfx 0.3
+  <span class="dim">migrated v1 → v3, session #8</span>
+<span class="cmd">&gt; save locked by a crashed server</span>
+  <span class="okc">took over a stale lock from crashed-server</span>
+<span class="cmd">&gt; save locked by a live server</span>
+  waiting 3s × 5 → <span class="warn">kicked after 14.6s, nothing written</span>
+<span class="cmd">&gt; every DataStore call failing</span>
+  retry in 0.9s · 1.9s · 4.2s · 10.1s
+  <span class="warn">kicked: "Nothing was lost"</span>
+<span class="cmd">&gt; AddCurrency with NaN, 1.5, -50, "Robux"</span>
+  <span class="okc">false · false · false · false</span></pre>
+        </div>
+      </article>
+
+      <article class="sys">
+        <div class="sys-body">
+          <div class="sys-top"><span class="sys-no">SYSTEM 03</span><span class="sys-meta">13 modules · built on System 02</span></div>
+          <h3>Economy &amp; Monetization</h3>
+          <p class="desc">Coins, Gems, a shop, game passes and developer products. Every purchase is checked on the server, and every developer product is granted exactly once.</p>
+          <ul class="feat">
+            <li>Idempotent ProcessReceipt: a grant and its receipt are saved together</li>
+            <li>Config-driven shop where the client sends only an item id</li>
+            <li>Game passes confirmed with Roblox before any benefit applies</li>
+            <li>VIP coin multiplier through a single Earn function</li>
+            <li>Purchase analytics hook plus Roblox economy events</li>
+            <li>Catalog mistakes fail at startup, never in a player's purchase</li>
+          </ul>
+          <details class="code">
+            <summary>Exactly-once grant <span>ReceiptProcessor.luau</span></summary>
+<pre><span class="k">if</span> DataService.HasReceipt(player, receipt.PurchaseId) <span class="k">then</span>
+	<span class="c">-- Granted before: only confirm the save.</span>
+<span class="k">else</span>
+	<span class="k">if</span> <span class="k">not</span> applyGrants(player, product.Grants) <span class="k">then</span>
+		<span class="k">return</span> NOT_PROCESSED_YET
+	<span class="k">end</span>
+	<span class="c">-- Same step as the grant, so every save holds both or neither.</span>
+	DataService.RecordReceipt(player, receipt.PurchaseId)
+<span class="k">end</span>
+<span class="k">if</span> <span class="k">not</span> DataService.SaveNow(player) <span class="k">then</span>
+	<span class="k">return</span> NOT_PROCESSED_YET
+<span class="k">end</span>
+<span class="k">return</span> PURCHASE_GRANTED</pre>
+          </details>
+        </div>
+        <div class="log" aria-label="Economy test results">
+          <div class="log-head"><span class="live">Studio test run</span><span>Output</span></div>
+<pre><span class="cmd">&gt; same receipt sent twice</span>
+  PurchaseGranted · PurchaseGranted
+  <span class="okc">Gems +100, once</span>
+<span class="cmd">&gt; same receipt twice at the same time</span>
+  PurchaseGranted · NotProcessedYet
+  <span class="okc">Gems +100, once</span>
+<span class="cmd">&gt; every save failing after the grant</span>
+  NotProcessedYet × 2 <span class="dim">· never told Roblox "granted"</span>
+  <span class="okc">Gems +100, once</span>
+<span class="cmd">&gt; faked VIP purchase event</span>
+  <span class="warn">Roblox says they don't own it. Not granted</span>
+<span class="cmd">&gt; shop: Sword ×2, Crown with 0 Gems</span>
+  Ok · LimitReached · NotEnough</pre>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section id="tested" class="band">
+  <div class="wrap">
+    <div class="sechead">
+      <h2>Reviewed as an exploiter</h2>
+      <p>Every way a client can reach the server, attacked in Studio. A selection from the 40 attacks in the READMEs.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Attack</th><th>System</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Teleport next to a target, swing, teleport back</td><td class="sys-cell">Combat</td><td><span class="pill patched">PATCHED</span>Attacks refused for 1.5s after an impossible move. No false positives after knockback or respawn.</td></tr>
+          <tr><td>Flood a server-to-client remote from the client</td><td class="sys-cell">Combat · Data</td><td><span class="pill patched">PATCHED</span>Drained by an empty handler. 800 junk messages, zero log errors.</td></tr>
+          <tr><td>Fake a game pass purchase event</td><td class="sys-cell">Economy</td><td><span class="pill patched">PATCHED</span>Ownership confirmed with Roblox before the benefit applies.</td></tr>
+          <tr><td>Fire 50 attack requests in a single frame</td><td class="sys-cell">Combat</td><td><span class="pill blocked">BLOCKED</span>Token bucket in front of everything. None accepted.</td></tr>
+          <tr><td>Send the same developer product receipt twice at once</td><td class="sys-cell">Economy</td><td><span class="pill blocked">BLOCKED</span>In-flight guard plus receipts in the save. Granted once.</td></tr>
+          <tr><td>Set a setting to NaN, or change Coins through the settings remote</td><td class="sys-cell">Data</td><td><span class="pill blocked">BLOCKED</span>Each setting has a type and range rule. Anything else is refused.</td></tr>
+          <tr><td>Load a save that another live server holds</td><td class="sys-cell">Data</td><td><span class="pill blocked">BLOCKED</span>Waits through 6 lock checks, then asks the player to rejoin.</td></tr>
+          <tr><td>Send a price, damage number or target with a request</td><td class="sys-cell">All three</td><td><span class="pill blocked">BLOCKED</span>Only a move name or item id is ever read. The server works out the rest.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tablenote">The review turned up 3 real gaps. All 3 were patched, then attacked again in Studio.</p>
+  </div>
+</section>
+
+<section id="blender">
+  <div class="wrap">
+    <div class="sechead">
+      <h2>Blender work</h2>
+      <p>The three items sold in the economy system's shop, built in Blender and rendered in Cycles. Each scene is generated by a Python script, so every model, material and light can be rebuilt or changed from code.</p>
+    </div>
+    <div class="gallery">
+      <figure class="render wide">
+        <img src="renders/potion.jpg" width="1600" height="1000" alt="A glass flask of glowing red potion with a cork stopper, beside a stack of gold coins and a blue gem on a dark table">
+        <figcaption>
+          <div class="r-top"><h3>Health Potion</h3><span class="r-tag">Shop item · Potion</span></div>
+          <p>A lathed glass flask with real wall thickness, glowing liquid with bubbles, a cork and twine, set beside the game's two currencies: Coins and a Gem.</p>
+          <div class="r-stats">33,492 tris · 6 materials · Cycles 256 samples · 1600×1000 in 6.3s</div>
+        </figcaption>
+      </figure>
+      <figure class="render">
+        <img src="renders/sword.jpg" width="1600" height="1000" alt="A low-poly sword with a gold guard and a glowing blue rune, stuck in a faceted stone under a starry sky" loading="lazy">
+        <figcaption>
+          <div class="r-top"><h3>Iron Sword</h3><span class="r-tag">Shop item · Sword</span></div>
+          <p>Game-ready low poly: a diamond-section blade with a glowing rune, a gold guard and a wrapped grip, stuck in a randomised stone.</p>
+          <div class="r-stats">958 tris · 5 materials · 1600×1000 in 4.2s</div>
+        </figcaption>
+      </figure>
+      <figure class="render">
+        <img src="renders/crown.jpg" width="1600" height="1000" alt="A gold crown with pearl-tipped spikes and ruby and sapphire gems, resting on a red velvet cushion" loading="lazy">
+        <figcaption>
+          <div class="r-top"><h3>Golden Crown</h3><span class="r-tag">Shop item · Crown</span></div>
+          <p>Polished gold, pearls, and alternating ruby and sapphire gems with real refraction, on a velvet cushion with tassels.</p>
+          <div class="r-stats">10,168 tris · 6 materials · 1600×1000 in 4.5s</div>
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="blender-foot">
+      <ol class="pipeline">
+        <li><h3>Model in code</h3><p>Meshes built with Blender's Python API: lathed profiles, bevel, solidify and subdivision modifiers, and randomised low-poly rock.</p></li>
+        <li><h3>Material &amp; light</h3><p>Principled BSDF metal, glass and velvet. Three-point area lighting with a soft reflection card, and depth of field on every camera.</p></li>
+        <li><h3>Render</h3><p>Cycles on the GPU with OptiX, 256 samples, denoised. Every frame above renders in under 7 seconds.</p></li>
+        <li><h3>Into Roblox</h3><p>Exported as FBX at stud scale and brought in through Studio's 3D importer. At 958 triangles, the sword is light enough to drop straight into a game.</p></li>
+      </ol>
+      <div class="links">
+        <a href="https://github.com/fornorharry/fornorharry.github.io/blob/main/blender/build_scenes.py">Read the build script <span>Python · bpy</span></a>
+        <a href="https://github.com/fornorharry/fornorharry.github.io/raw/main/blender/potion.blend">potion.blend <span>Blender 5.1</span></a>
+        <a href="https://github.com/fornorharry/fornorharry.github.io/raw/main/blender/sword.blend">sword.blend <span>Blender 5.1</span></a>
+        <a href="https://github.com/fornorharry/fornorharry.github.io/raw/main/blender/crown.blend">crown.blend <span>Blender 5.1</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="rates" class="band">
+  <div class="wrap">
+    <div class="sechead">
+      <h2>Commission rates</h2>
+      <p>Priced by scope. 50% upfront, 50% before delivery. Robux or bank transfer.</p>
+    </div>
+    <div class="rates">
+      <div class="rate"><div class="tier">Small task</div><div class="price">€15–30</div><div class="ex">A fix, a tweak, one small script</div></div>
+      <div class="rate feature"><div class="tier">Small system</div><div class="price">€30–70</div><div class="ex">Leaderstats, a shop, a UI script</div></div>
+      <div class="rate"><div class="tier">Medium system</div><div class="price">€70–180</div><div class="ex">Combat, inventory, data saving</div></div>
+      <div class="rate"><div class="tier">Large system</div><div class="price">€180–400</div><div class="ex">Interconnected multi-system work</div></div>
+      <div class="rate"><div class="tier">Full game</div><div class="price">Quote</div><div class="ex">Scoped and milestoned</div></div>
+    </div>
+
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h3>Scope</h3><p>You send the spec: what the system does and the deadline. I confirm what's included before anything starts.</p></div>
+      <div class="step"><div class="n">02</div><h3>Build</h3><p>I write the Luau to spec: typed, modular, server-authoritative, commented. You get progress as it lands.</p></div>
+      <div class="step"><div class="n">03</div><h3>Test</h3><p>Tested in Studio before handover, with the edge cases checked, not just the happy path.</p></div>
+      <div class="step"><div class="n">04</div><h3>Handover</h3><p>A Rojo project or place file, a README, and clear code you can actually maintain. Small post-delivery fixes included.</p></div>
+    </div>
+
+    <div class="closing">
+      <h3>Want a system like these?</h3>
+      <p>Reply to the message this page came with. Say what the system should do, your budget and your deadline.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Littleball91 · Roblox Luau systems</span>
+    <span>Test results from real Studio runs. Renders straight out of Blender.</span>
+  </div>
+</footer>
+
+<script>
+  // Theme toggle. Remembers the choice per viewer, and works without storage too.
+  (function () {
+    var root = document.documentElement, key = "luau_theme", btn = document.getElementById("tgl");
+    try { var saved = localStorage.getItem(key); if (saved) root.setAttribute("data-theme", saved); } catch (e) {}
+    btn.addEventListener("click", function () {
+      var dark = getComputedStyle(root).getPropertyValue("color-scheme").indexOf("dark") > -1;
+      var next = dark ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem(key, next); } catch (e) {}
+    });
+  })();
+</script>
+
+</body>
+</html>
