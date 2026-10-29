@@ -7,6 +7,6 @@ Roblox game systems in strict-typed Luau (combat, player data and saving, econom
 ## In this repo
 
 - `index.html`: the portfolio page. One self-contained file with no build step.
-- `renders/`: the Blender renders shown on the page, plus `stats.json` with each scene's triangle count and render time.
+- `renders/`: the Blender renders shown on the page, the matching clay and wireframe renders (`*-wire.jpg`), and `stats.json` with each scene's triangle count and render time.
 - `blender/build_scenes.py`: the script that builds and renders all three scenes. Run it with `blender -b --factory-startup --python blender/build_scenes.py -- renders blender`.
 - `blender/*.blend`: the saved scenes (Blender 5.1).

@@ -1,41 +1,44 @@
 {
   "sword": {
-    "tris": 958,
-    "verts": 503,
-    "objects": 16,
+    "tris": 11820,
+    "verts": 5974,
+    "objects": 36,
     "materials": 5,
-    "render_seconds": 4.2,
+    "render_seconds": 45.7,
     "device": "OPTIX",
-    "samples": 256,
+    "samples": 640,
     "resolution": [
-      1600,
-      1000
-    ]
+      2400,
+      1500
+    ],
+    "wire_seconds": 3.9
   },
   "crown": {
-    "tris": 10168,
-    "verts": 5152,
-    "objects": 37,
-    "materials": 6,
-    "render_seconds": 4.5,
+    "tris": 62038,
+    "verts": 31485,
+    "objects": 64,
+    "materials": 7,
+    "render_seconds": 16.2,
     "device": "OPTIX",
-    "samples": 256,
+    "samples": 640,
     "resolution": [
-      1600,
-      1000
-    ]
+      2400,
+      1500
+    ],
+    "wire_seconds": 4.4
   },
   "potion": {
-    "tris": 33492,
-    "verts": 16768,
-    "objects": 13,
-    "materials": 6,
-    "render_seconds": 6.3,
+    "tris": 75312,
+    "verts": 37791,
+    "objects": 21,
+    "materials": 10,
+    "render_seconds": 29.8,
     "device": "OPTIX",
-    "samples": 256,
+    "samples": 640,
     "resolution": [
-      1600,
-      1000
-    ]
+      2400,
+      1500
+    ],
+    "wire_seconds": 4.0
   }
 }
