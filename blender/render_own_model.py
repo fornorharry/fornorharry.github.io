@@ -1,5 +1,5 @@
 """
-Renders one of my own modelled .blend files for the portfolio: a studio beauty shot and a
+Renders a model from an existing .blend file for the portfolio: a studio beauty shot and a
 clay render with a wireframe overlay that shows the topology.
 
     blender -b <model.blend> --python render_own_model.py -- <render_dir> <name> [preview]
@@ -170,16 +170,16 @@ def area_light(name, loc, target, energy, size, color, shape="RECTANGLE", size_y
     return ob
 
 
-def backdrop(mat, floor_z, center_x, curve_y):
+def backdrop(mat, floor_z, center_x, curve_y, scale):
     """A floor that sweeps up into a back wall, so the render has no horizon line.
     The sweep starts at curve_y, behind the model."""
-    profile = [(y, floor_z) for y in (-30, -8, -2, curve_y - 4.0, curve_y)]
-    radius = 4.0
+    profile = [(curve_y - d * scale, floor_z) for d in (36, 14, 8, 4, 0)]
+    radius = 4.0 * scale
     for i in range(1, 16):
         a = -math.pi / 2 + (math.pi / 2) * i / 15
         profile.append((curve_y + radius * math.cos(a), floor_z + radius + radius * math.sin(a)))
-    profile.append((curve_y + radius, floor_z + 30.0))
-    verts = [(center_x + x, y, z) for (y, z) in profile for x in (-40, 40)]
+    profile.append((curve_y + radius, floor_z + 30.0 * scale))
+    verts = [(center_x + x * scale, y, z) for (y, z) in profile for x in (-40, 40)]
     faces = [(i * 2, i * 2 + 1, i * 2 + 3, i * 2 + 2) for i in range(len(profile) - 1)]
     me = bpy.data.meshes.new("Backdrop")
     me.from_pydata(verts, [], faces)
@@ -228,6 +228,9 @@ info = stats(model)
 lo, hi = bounds(model)
 center = (lo + hi) / 2
 size = (hi - lo).length
+# The studio is laid out for a model about 6.3 units across (the pistol). Other models
+# get the same studio scaled to their size, so the lighting looks the same.
+scale = size / 6.3
 
 # The file's own lights and camera are replaced by the studio setup below.
 for ob in [o for o in scene.objects if o.type in ("LIGHT", "CAMERA")]:
@@ -243,20 +246,25 @@ world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.012, 0.01
 world.node_tree.nodes["Background"].inputs["Strength"].default_value = 1.0
 
 floor = new_material("Studio Floor", (0.035, 0.037, 0.042), 0.32)
-curve_y = max(6.0, hi.y + 5.0)
-backdrop(floor, lo.z - 0.002, center.x, curve_y)
+curve_y = max(center.y + 6.7 * scale, hi.y + 5.0 * scale)
+backdrop(floor, lo.z - 0.002 * scale, center.x, curve_y, scale)
+
+
+def studio_light(name, offset, energy, light_size, color, size_y=None):
+    """An area light at an offset from the model's centre, aimed at it, scaled with the model."""
+    area_light(name, center + Vector(offset) * scale, center, energy * scale ** 2, light_size * scale, color,
+               size_y=None if size_y is None else size_y * scale)
+
 
 # Big soft key from the upper front left, cool rims from behind, and long strip lights
 # above whose reflections run along the slide and suppressor.
-area_light("Key", center + Vector((-2.5, -5.5, 5.0)), center, 1000, 4.0, (1.0, 0.96, 0.9))
-area_light("Rim Left", center + Vector((-6.0, 3.0, 3.2)), center, 1700, 1.2, (0.55, 0.72, 1.0),
-           shape="RECTANGLE", size_y=5.0)
-area_light("Rim Right", center + Vector((6.5, 3.0, 2.6)), center, 1200, 1.2, (0.6, 0.78, 1.0),
-           shape="RECTANGLE", size_y=5.0)
-area_light("Strip Top", center + Vector((0.0, -1.2, 4.5)), center, 260, 8.0, (1.0, 1.0, 1.0),
-           shape="RECTANGLE", size_y=0.5)
-area_light("Back Glow", Vector((center.x, curve_y + 0.5, lo.z + 0.4)), Vector((center.x, curve_y + 4.0, lo.z + 4.0)),
-           700, 6.0, (0.35, 0.5, 0.9))
+studio_light("Key", (-2.5, -5.5, 5.0), 1000, 4.0, (1.0, 0.96, 0.9))
+studio_light("Rim Left", (-6.0, 3.0, 3.2), 1700, 1.2, (0.55, 0.72, 1.0), size_y=5.0)
+studio_light("Rim Right", (6.5, 3.0, 2.6), 1200, 1.2, (0.6, 0.78, 1.0), size_y=5.0)
+studio_light("Strip Top", (0.0, -1.2, 4.5), 260, 8.0, (1.0, 1.0, 1.0), size_y=0.5)
+area_light("Back Glow", Vector((center.x, curve_y + 0.5 * scale, lo.z + 0.4 * scale)),
+           Vector((center.x, curve_y + 4.0 * scale, lo.z + 4.0 * scale)), 700 * scale ** 2, 6.0 * scale,
+           (0.35, 0.5, 0.9))
 
 cam_data = bpy.data.cameras.new("Camera")
 cam_data.lens = 70
@@ -268,7 +276,8 @@ cam.location = target + direction * size * FRAMING
 look_at(cam, target)
 cam_data.dof.use_dof = True
 cam_data.dof.focus_distance = (target - cam.location).length
-cam_data.dof.aperture_fstop = 4.0
+# Depth of field shrinks with the camera distance, so small models get a narrower aperture.
+cam_data.dof.aperture_fstop = min(4.0 / scale, 64.0)
 scene.camera = cam
 
 device = use_gpu()
