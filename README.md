@@ -10,5 +10,5 @@ Roblox game systems in strict-typed Luau (combat, player data and saving, econom
 - `renders/`: the Blender renders shown on the page, the matching clay and wireframe renders (`*-wire.jpg`), and `stats.json` with each scene's triangle count and render time.
 - `blender/build_scenes.py`: the script that builds and renders the three shop item scenes. Run it with `blender -b --factory-startup --python blender/build_scenes.py -- renders blender`.
 - `blender/render_own_model.py`: renders a model from an existing .blend file in a studio setup without changing the model or saving its file, plus close-ups listed in a shots file. Run it with `blender -b <model.blend> --python blender/render_own_model.py -- renders pistol shots=blender/shots-pistol.json`.
-- `blender/shots-*.json`: the close-up cameras for each hand-made model.
+- `blender/shots-*.json`: the close-up cameras for each model.
 - `blender/*.blend`: the saved scenes (Blender 5.1).

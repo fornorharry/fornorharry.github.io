@@ -1,0 +1,4 @@
+[
+  {"name": "mesh", "target": [0.55, -0.01, 0.02], "direction": [-1.0, -0.5, 0.2], "distance": 0.35, "lens": 100, "fstop": 4},
+  {"name": "cap", "target": [0.92, 0.0, 0.13], "direction": [0.5, -1.0, 0.6], "distance": 0.5, "lens": 100, "fstop": 8}
+]

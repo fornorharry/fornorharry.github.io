@@ -74,55 +74,51 @@
     "verts": 950299,
     "objects": 99,
     "materials": 0,
-    "render_seconds": 14.2,
+    "render_seconds": 13.0,
     "device": "OPTIX",
     "samples": 640,
     "resolution": [
       2400,
       1500
-    ],
-    "wire_seconds": 4.1
+    ]
   },
   "panel": {
     "tris": 1801037,
     "verts": 915626,
     "objects": 24,
     "materials": 0,
-    "render_seconds": 11.5,
+    "render_seconds": 11.2,
     "device": "OPTIX",
     "samples": 640,
     "resolution": [
       2400,
       1500
-    ],
-    "wire_seconds": 3.9
+    ]
   },
   "button": {
     "tris": 246264,
     "verts": 123134,
     "objects": 1,
     "materials": 1,
-    "render_seconds": 11.9,
+    "render_seconds": 11.4,
     "device": "OPTIX",
     "samples": 640,
     "resolution": [
       2400,
       1500
-    ],
-    "wire_seconds": 3.8
+    ]
   },
   "gate": {
     "tris": 234408,
     "verts": 116077,
     "objects": 1,
     "materials": 1,
-    "render_seconds": 10.3,
+    "render_seconds": 9.7,
     "device": "OPTIX",
     "samples": 640,
     "resolution": [
       2400,
       1500
-    ],
-    "wire_seconds": 3.9
+    ]
   }
 }

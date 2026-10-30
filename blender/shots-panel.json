@@ -1,0 +1,4 @@
+[
+  {"name": "button", "target": [0.0, 0.0, 0.58], "direction": [0.6, -0.6, 0.75], "distance": 1.2, "lens": 85, "fstop": 4},
+  {"name": "screw", "target": [0.288, -0.453, 0.236], "direction": [0.5, -1.0, 0.35], "distance": 0.75, "lens": 100, "fstop": 4}
+]

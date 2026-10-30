@@ -1,0 +1,4 @@
+[
+  {"name": "ridges", "target": [0.28, -0.22, -0.01], "direction": [0.5, -1.0, 0.45], "distance": 1.6, "lens": 100, "fstop": 4},
+  {"name": "edge", "target": [-0.02, -0.3, -0.05], "direction": [0.8, -1.0, 0.12], "distance": 1.5, "lens": 85, "fstop": 2.8}
+]

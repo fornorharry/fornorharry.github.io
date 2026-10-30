@@ -14,6 +14,9 @@ exposure darkens or brightens the beauty shot, for models with very light materi
 wire_exposure does the same for the clay pass (dense meshes need it brighter). framing is
 the camera distance as a multiple of the model's size (default 2.15), and aim_z moves the
 point the camera aims at up or down (default -0.05).
+material=satin gives untextured models (Blender's flat default grey) a satin finish
+instead. sharpen adds a light sharpening pass (0 to 1, default 0). wire=0 skips the clay
+pass.
 shots is a JSON list of close-up cameras, each rendered as <name>-<shot>.jpg:
     [{"name": "sights", "target": [x, y, z], "direction": [x, y, z], "distance": 4, "lens": 100, "fstop": 2.8}]
 """
@@ -38,6 +41,9 @@ WIRE_EXPOSURE = float(options.get("wire_exposure", -1.6))
 FRAMING = float(options.get("framing", 2.15))
 # Raises or lowers the point the camera aims at, for models whose near end looms large.
 AIM_Z = float(options.get("aim_z", -0.05))
+MATERIAL = options.get("material")
+SHARPEN = float(options.get("sharpen", 0.0))
+WIRE = options.get("wire", "1") != "0"
 SHOTS = []
 if "shots" in options:
     with open(options["shots"]) as f:
@@ -107,7 +113,15 @@ def finishing(bloom=0.35, vignette=0.55):
         mix.blend_type = "MULTIPLY"
         mix.inputs[0].default_value = vignette
         out = n.new("NodeGroupOutput")
-        link(layers.outputs["Image"], glare.inputs["Image"])
+        source = layers.outputs["Image"]
+        if SHARPEN > 0:
+            sharpen = n.new("CompositorNodeFilter")
+            set_menu(sharpen.inputs["Type"], ("Diamond Sharpen", "Sharpen Diamond", "Box Sharpen", "Sharpen Box", "Sharpen"))
+            print(f"[portfolio] sharpen filter: {sharpen.inputs['Type'].default_value}", flush=True)
+            sharpen.inputs["Factor"].default_value = SHARPEN
+            link(source, sharpen.inputs["Image"])
+            source = sharpen.outputs["Image"]
+        link(source, glare.inputs["Image"])
         link(glare.outputs["Image"], mix.inputs[6])
         link(mask.outputs["Mask"], blur.inputs["Image"])
         link(blur.outputs["Image"], mix.inputs[7])
@@ -143,6 +157,28 @@ def clay():
     mix.inputs[7].default_value = (0.05, 0.055, 0.07, 1)
     p = next(node for node in nt.nodes if node.type == "BSDF_PRINCIPLED")
     nt.links.new(mix.outputs[2], p.inputs["Base Color"])
+    return m
+
+
+def satin():
+    """A satin finish for models that come without materials. Tripo models are split into
+    separate parts, and the gaps between them show the inside of the parts from behind,
+    which renders as black cracks. Faces seen from behind get a flat matching tone instead."""
+    m = new_material("Satin", (0.36, 0.365, 0.375), 0.36)
+    nt = m.node_tree
+    p = next(node for node in nt.nodes if node.type == "BSDF_PRINCIPLED")
+    p.inputs["Coat Weight"].default_value = 0.35
+    p.inputs["Coat Roughness"].default_value = 0.15
+    out = next(node for node in nt.nodes if node.type == "OUTPUT_MATERIAL")
+    geometry = nt.nodes.new("ShaderNodeNewGeometry")
+    fill = nt.nodes.new("ShaderNodeEmission")
+    fill.inputs["Color"].default_value = (0.36, 0.365, 0.375, 1)
+    fill.inputs["Strength"].default_value = 0.25
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(geometry.outputs["Backfacing"], mix.inputs["Fac"])
+    nt.links.new(p.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(fill.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
     return m
 
 
@@ -231,6 +267,13 @@ size = (hi - lo).length
 # The studio is laid out for a model about 6.3 units across (the pistol). Other models
 # get the same studio scaled to their size, so the lighting looks the same.
 scale = size / 6.3
+
+if MATERIAL == "satin":
+    finish = satin()
+    for ob in model:
+        if not any(slot.material for slot in ob.material_slots):
+            ob.data.materials.clear()
+            ob.data.materials.append(finish)
 
 # The file's own lights and camera are replaced by the studio setup below.
 for ob in [o for o in scene.objects if o.type in ("LIGHT", "CAMERA")]:
@@ -332,19 +375,20 @@ cam.location, cam.rotation_euler, cam_data.lens, cam_data.dof.focus_distance, ca
 
 # Clay and wireframe pass: same shot, every model material swapped for clay. Nothing is
 # saved, so the swap never reaches the original file.
-wire = clay()
-matte = new_material("Matte", (0.05, 0.05, 0.06), 0.9)
-for ob in scene.objects:
-    if ob.type == "MESH":
-        ob.data.materials.clear()
-        ob.data.materials.append(matte if ob.name == "Backdrop" else wire)
-scene.view_settings.exposure = WIRE_EXPOSURE
-scene.cycles.samples = 24 if PREVIEW else 200
-render.resolution_x, render.resolution_y = (800, 500) if PREVIEW else (1600, 1000)
-render.filepath = os.path.join(RENDER_DIR, NAME + "-wire.jpg")
-started = time.time()
-bpy.ops.render.render(write_still=True)
-info["wire_seconds"] = round(time.time() - started, 1)
+if WIRE:
+    wire = clay()
+    matte = new_material("Matte", (0.05, 0.05, 0.06), 0.9)
+    for ob in scene.objects:
+        if ob.type == "MESH":
+            ob.data.materials.clear()
+            ob.data.materials.append(matte if ob.name == "Backdrop" else wire)
+    scene.view_settings.exposure = WIRE_EXPOSURE
+    scene.cycles.samples = 24 if PREVIEW else 200
+    render.resolution_x, render.resolution_y = (800, 500) if PREVIEW else (1600, 1000)
+    render.filepath = os.path.join(RENDER_DIR, NAME + "-wire.jpg")
+    started = time.time()
+    bpy.ops.render.render(write_still=True)
+    info["wire_seconds"] = round(time.time() - started, 1)
 
 if not PREVIEW:
     stats_path = os.path.join(RENDER_DIR, "stats.json")
