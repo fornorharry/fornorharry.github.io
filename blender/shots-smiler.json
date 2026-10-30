@@ -1,0 +1,4 @@
+[
+  {"name": "seats", "target": [0.35, 0.0, 1.2], "direction": [0.5, -1.0, 0.9], "distance": 3.0, "lens": 85, "fstop": 2.4},
+  {"name": "wheels", "target": [1.0, 0.2, -0.2], "direction": [1.0, -0.5, 0.1], "distance": 2.6, "lens": 85, "fstop": 2.8}
+]

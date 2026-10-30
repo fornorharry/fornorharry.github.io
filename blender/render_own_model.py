@@ -3,11 +3,19 @@ Renders one of my own modelled .blend files for the portfolio: a studio beauty s
 clay render with a wireframe overlay that shows the topology.
 
     blender -b <model.blend> --python render_own_model.py -- <render_dir> <name> [preview]
+        [exposure=<stops>] [shots=<shots.json>]
 
 The model and its materials are left exactly as they are in the file. Only the
 presentation is replaced: the file's lights are removed and a studio setup (backdrop,
 lights, camera, compositor finish) is added. Nothing is saved, so the original .blend
 file is never changed.
+
+exposure darkens or brightens the beauty shot, for models with very light materials, and
+wire_exposure does the same for the clay pass (dense meshes need it brighter). framing is
+the camera distance as a multiple of the model's size (default 2.15), and aim_z moves the
+point the camera aims at up or down (default -0.05).
+shots is a JSON list of close-up cameras, each rendered as <name>-<shot>.jpg:
+    [{"name": "sights", "target": [x, y, z], "direction": [x, y, z], "distance": 4, "lens": 100, "fstop": 2.8}]
 """
 
 import bpy
@@ -22,7 +30,18 @@ from mathutils import Vector
 argv = sys.argv[sys.argv.index("--") + 1 :]
 RENDER_DIR = os.path.abspath(argv[0])
 NAME = argv[1]
-PREVIEW = len(argv) > 2 and argv[2] == "preview"
+PREVIEW = "preview" in argv[2:]
+options = dict(a.split("=", 1) for a in argv[2:] if "=" in a)
+EXPOSURE = float(options.get("exposure", 0.0))
+WIRE_EXPOSURE = float(options.get("wire_exposure", -1.6))
+# Camera distance as a multiple of the model's size; smaller is closer.
+FRAMING = float(options.get("framing", 2.15))
+# Raises or lowers the point the camera aims at, for models whose near end looms large.
+AIM_Z = float(options.get("aim_z", -0.05))
+SHOTS = []
+if "shots" in options:
+    with open(options["shots"]) as f:
+        SHOTS = json.load(f)
 
 scene = bpy.context.scene
 
@@ -151,14 +170,15 @@ def area_light(name, loc, target, energy, size, color, shape="RECTANGLE", size_y
     return ob
 
 
-def backdrop(mat, floor_z, center_x):
-    """A floor that sweeps up into a back wall, so the render has no horizon line."""
-    profile = [(y, floor_z) for y in (-30, -8, -2, 2.0, 6.0)]
+def backdrop(mat, floor_z, center_x, curve_y):
+    """A floor that sweeps up into a back wall, so the render has no horizon line.
+    The sweep starts at curve_y, behind the model."""
+    profile = [(y, floor_z) for y in (-30, -8, -2, curve_y - 4.0, curve_y)]
     radius = 4.0
     for i in range(1, 16):
         a = -math.pi / 2 + (math.pi / 2) * i / 15
-        profile.append((6.0 + radius * math.cos(a), floor_z + radius + radius * math.sin(a)))
-    profile.append((6.0 + radius, floor_z + 30.0))
+        profile.append((curve_y + radius * math.cos(a), floor_z + radius + radius * math.sin(a)))
+    profile.append((curve_y + radius, floor_z + 30.0))
     verts = [(center_x + x, y, z) for (y, z) in profile for x in (-40, 40)]
     faces = [(i * 2, i * 2 + 1, i * 2 + 3, i * 2 + 2) for i in range(len(profile) - 1)]
     me = bpy.data.meshes.new("Backdrop")
@@ -223,7 +243,8 @@ world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.012, 0.01
 world.node_tree.nodes["Background"].inputs["Strength"].default_value = 1.0
 
 floor = new_material("Studio Floor", (0.035, 0.037, 0.042), 0.32)
-backdrop(floor, lo.z - 0.002, center.x)
+curve_y = max(6.0, hi.y + 5.0)
+backdrop(floor, lo.z - 0.002, center.x, curve_y)
 
 # Big soft key from the upper front left, cool rims from behind, and long strip lights
 # above whose reflections run along the slide and suppressor.
@@ -234,16 +255,16 @@ area_light("Rim Right", center + Vector((6.5, 3.0, 2.6)), center, 1200, 1.2, (0.
            shape="RECTANGLE", size_y=5.0)
 area_light("Strip Top", center + Vector((0.0, -1.2, 4.5)), center, 260, 8.0, (1.0, 1.0, 1.0),
            shape="RECTANGLE", size_y=0.5)
-area_light("Back Glow", Vector((center.x, 6.5, lo.z + 0.4)), Vector((center.x, 10.0, lo.z + 4.0)),
+area_light("Back Glow", Vector((center.x, curve_y + 0.5, lo.z + 0.4)), Vector((center.x, curve_y + 4.0, lo.z + 4.0)),
            700, 6.0, (0.35, 0.5, 0.9))
 
 cam_data = bpy.data.cameras.new("Camera")
 cam_data.lens = 70
 cam = link_new(bpy.data.objects.new("Camera", cam_data))
 # Far enough back for the whole model to fit with some room around it.
-target = center + Vector((0.0, 0.2, -0.05))
+target = center + Vector((0.0, 0.2, AIM_Z))
 direction = Vector((2.0, -9.6, 3.0)).normalized()
-cam.location = target + direction * size * 2.15
+cam.location = target + direction * size * FRAMING
 look_at(cam, target)
 cam_data.dof.use_dof = True
 cam_data.dof.focus_distance = (target - cam.location).length
@@ -270,7 +291,7 @@ try:
     scene.view_settings.look = "AgX - Punchy"
 except TypeError:
     pass
-scene.view_settings.exposure = 0.0
+scene.view_settings.exposure = EXPOSURE
 finishing()
 
 os.makedirs(RENDER_DIR, exist_ok=True)
@@ -284,6 +305,22 @@ info.update({
     "resolution": [render.resolution_x, render.resolution_y],
 })
 
+# Close-ups: the same lights, a longer lens and a shallow depth of field.
+main_camera = (cam.location.copy(), cam.rotation_euler.copy(), cam_data.lens,
+               cam_data.dof.focus_distance, cam_data.dof.aperture_fstop)
+render.resolution_x, render.resolution_y = (640, 400) if PREVIEW else (1600, 1000)
+scene.cycles.samples = 32 if PREVIEW else 400
+for shot in SHOTS:
+    shot_target = Vector(shot["target"])
+    cam.location = shot_target + Vector(shot["direction"]).normalized() * shot["distance"]
+    look_at(cam, shot_target)
+    cam_data.lens = shot.get("lens", 100)
+    cam_data.dof.focus_distance = shot["distance"]
+    cam_data.dof.aperture_fstop = shot.get("fstop", 2.8)
+    render.filepath = os.path.join(RENDER_DIR, f"{NAME}-{shot['name']}.jpg")
+    bpy.ops.render.render(write_still=True)
+cam.location, cam.rotation_euler, cam_data.lens, cam_data.dof.focus_distance, cam_data.dof.aperture_fstop = main_camera
+
 # Clay and wireframe pass: same shot, every model material swapped for clay. Nothing is
 # saved, so the swap never reaches the original file.
 wire = clay()
@@ -292,7 +329,7 @@ for ob in scene.objects:
     if ob.type == "MESH":
         ob.data.materials.clear()
         ob.data.materials.append(matte if ob.name == "Backdrop" else wire)
-scene.view_settings.exposure = -1.6
+scene.view_settings.exposure = WIRE_EXPOSURE
 scene.cycles.samples = 24 if PREVIEW else 200
 render.resolution_x, render.resolution_y = (800, 500) if PREVIEW else (1600, 1000)
 render.filepath = os.path.join(RENDER_DIR, NAME + "-wire.jpg")

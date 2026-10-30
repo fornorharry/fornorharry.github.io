@@ -46,13 +46,27 @@
     "verts": 17326,
     "objects": 20,
     "materials": 19,
-    "render_seconds": 10.6,
+    "render_seconds": 11.0,
     "device": "OPTIX",
     "samples": 640,
     "resolution": [
       2400,
       1500
     ],
-    "wire_seconds": 3.5
+    "wire_seconds": 3.7
+  },
+  "smiler": {
+    "tris": 11374480,
+    "verts": 5731875,
+    "objects": 846,
+    "materials": 65,
+    "render_seconds": 19.7,
+    "device": "OPTIX",
+    "samples": 640,
+    "resolution": [
+      2400,
+      1500
+    ],
+    "wire_seconds": 5.4
   }
 }

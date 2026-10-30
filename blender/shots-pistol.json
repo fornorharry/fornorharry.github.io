@@ -1,0 +1,4 @@
+[
+  {"name": "sights", "target": [-1.15, -0.2, 1.7], "direction": [-0.35, -1.0, 0.45], "distance": 3.6, "lens": 100, "fstop": 2.8},
+  {"name": "light", "target": [0.75, -0.3, 1.15], "direction": [0.45, -1.0, 0.05], "distance": 4.2, "lens": 100, "fstop": 2.8}
+]

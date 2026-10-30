@@ -81,9 +81,21 @@
   @media (max-width:640px){.nav a.hidesm{display:none}}
 
   /* hero */
-  .hero{padding-block:clamp(44px,8vw,84px) clamp(28px,5vw,48px)}
+  .hero{padding-block:clamp(44px,7vw,76px) clamp(28px,5vw,48px);position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:-20% -10% auto 40%;height:140%;pointer-events:none;
+    background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 16%,transparent),transparent)}
+  .hero-grid{position:relative;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(28px,4vw,52px);align-items:center}
+  @media (max-width:900px){.hero-grid{grid-template-columns:1fr}}
   .hero .eyebrow{margin-bottom:18px}
-  .hero h1{font-size:clamp(2.1rem,6.4vw,4rem);line-height:1.02;font-weight:700;max-width:16ch}
+  .hero h1{font-size:clamp(2.1rem,5.4vw,3.6rem);line-height:1.02;font-weight:700;max-width:16ch}
+  .hero-shot{position:relative;display:block;border-radius:18px;overflow:hidden;border:1px solid var(--line);
+    background:var(--console);box-shadow:0 30px 60px -28px rgba(10,20,40,.55),0 0 0 1px rgba(255,255,255,.03) inset}
+  .hero-shot img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;transition:transform .6s ease}
+  .hero-shot:hover img{transform:scale(1.03)}
+  .hero-tag{position:absolute;left:14px;bottom:14px;display:flex;gap:10px;align-items:center;
+    font-family:var(--mono);font-size:.74rem;color:#dfe6f0;padding:7px 12px;border-radius:9px;
+    background:rgba(8,11,16,.72);backdrop-filter:blur(6px)}
+  .hero-tag b{color:#7cb4ff;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:.68rem}
   .hero h1 .hl{color:var(--accent)}
   .lede{margin-top:20px;max-width:62ch;font-size:clamp(1rem,2.4vw,1.15rem);color:var(--muted)}
   .cta-row{margin-top:28px;display:flex;flex-wrap:wrap;gap:12px}
@@ -173,7 +185,29 @@
     display:flex;flex-direction:column;min-width:0}
   .render.wide{grid-column:1/-1}
   .shot{position:relative}
-  .render img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;background:var(--console)}
+  .render .shot{overflow:hidden}
+  .render .shot img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;background:var(--console);
+    cursor:zoom-in;transition:transform .6s ease}
+  .render .shot:hover img{transform:scale(1.02)}
+  .views .expand{font-size:.85rem;padding:6px 9px}
+  .details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;background:var(--line);border-top:1px solid var(--line)}
+  .detail{position:relative;display:block;padding:0;border:0;margin:0;cursor:zoom-in;overflow:hidden;background:var(--console)}
+  .detail img{display:block;width:100%;height:auto;aspect-ratio:16/7;object-fit:cover;transition:transform .5s ease}
+  .detail:hover img{transform:scale(1.05)}
+  .detail span{position:absolute;left:10px;bottom:10px;font-family:var(--mono);font-size:.7rem;color:#dfe6f0;
+    padding:4px 9px;border-radius:7px;background:rgba(8,11,16,.72);backdrop-filter:blur(6px)}
+  .group-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:8px 0 16px;padding-top:6px}
+  .gallery + .group-head{margin-top:40px}
+  .group-no{font-family:var(--mono);font-size:.8rem;color:var(--accent)}
+  .group-head h3{font-size:1.25rem;font-weight:600}
+  .group-note{font-family:var(--mono);font-size:.76rem;color:var(--faint)}
+  #viewer{padding:0;border:0;background:transparent;max-width:min(1500px,96vw);max-height:96vh;overflow:visible}
+  #viewer::backdrop{background:rgba(4,6,10,.9);backdrop-filter:blur(4px)}
+  #viewer img{display:block;max-width:min(1500px,96vw);max-height:84vh;width:auto;height:auto;border-radius:12px}
+  .viewer-cap{margin-top:10px;font-family:var(--mono);font-size:.78rem;color:#c9d2df;text-align:center;max-width:90ch;margin-inline:auto}
+  .viewer-close{position:absolute;top:-14px;right:-14px;width:36px;height:36px;border-radius:50%;border:0;cursor:pointer;
+    font-size:1.3rem;line-height:1;background:#fff;color:#10141c;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  @media (max-width:640px){.viewer-close{top:-44px;right:0}}
   .render[data-view="render"] .v-wire,.render[data-view="wire"] .v-render{display:none}
   .views{position:absolute;right:12px;bottom:12px;display:flex;gap:2px;padding:3px;border-radius:9px;
     background:rgba(8,11,16,.72);backdrop-filter:blur(6px)}
@@ -242,22 +276,28 @@
 </header>
 
 <div class="hero">
-  <div class="wrap">
-    <div class="eyebrow">Roblox · Luau · Server-authoritative</div>
-    <h1>Game systems built to <span class="hl">studio standard.</span></h1>
-    <p class="lede">I build Roblox game systems in strict-typed Luau: combat, player data and monetization that are modular, exploit-tested and ready to ship. Rojo + Git workflow, a README with test steps for every system, and Blender for the 3D side.</p>
-    <div class="cta-row">
-      <a class="btn primary" href="#systems">See the systems →</a>
-      <a class="btn ghost" href="#blender">Blender work</a>
-      <a class="btn ghost" href="#rates">Rates</a>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="eyebrow">Roblox · Luau · Server-authoritative · Blender</div>
+      <h1>Game systems built to <span class="hl">studio standard.</span></h1>
+      <p class="lede">I build Roblox game systems in strict-typed Luau: combat, player data and monetization that are modular, exploit-tested and ready to ship. Rojo + Git workflow, a README with test steps for every system, and Blender for the 3D side.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="#systems">See the systems →</a>
+        <a class="btn ghost" href="#blender">Blender work</a>
+        <a class="btn ghost" href="#rates">Rates</a>
+      </div>
+      <div class="counts" aria-label="Portfolio at a glance">
+        <div class="count"><b>3</b><span>production systems</span></div>
+        <div class="count"><b>49</b><span>strict-typed modules</span></div>
+        <div class="count"><b>40</b><span>attacks reviewed</span></div>
+        <div class="count"><b>3/3</b><span>gaps patched &amp; re-tested</span></div>
+        <div class="count"><b>5</b><span>Blender models</span></div>
+      </div>
     </div>
-    <div class="counts" aria-label="Portfolio at a glance">
-      <div class="count"><b>3</b><span>production systems</span></div>
-      <div class="count"><b>49</b><span>strict-typed modules</span></div>
-      <div class="count"><b>40</b><span>attacks reviewed</span></div>
-      <div class="count"><b>3/3</b><span>gaps patched &amp; re-tested</span></div>
-      <div class="count"><b>4</b><span>Blender models</span></div>
-    </div>
+    <a class="hero-shot" href="#blender">
+      <img src="renders/pistol.jpg" width="2400" height="1500" alt="A black pistol with green and red sights, a stippled grip, an under-rail flashlight and a long suppressor, standing beside its ejected magazine on a dark studio floor with blue rim light">
+      <span class="hero-tag"><b>Featured</b>Suppressed Pistol · hand-modelled</span>
+    </a>
   </div>
 </div>
 
@@ -279,24 +319,61 @@
   <div class="wrap">
     <div class="sechead">
       <h2>Blender work</h2>
-      <p>A hard-surface model built by hand, then the three items sold in the economy system's shop. The shop items are generated by a Python script, so every model, material and light can be rebuilt or changed from code. Everything is rendered in Cycles.</p>
+      <p>Models built by hand first, then procedural scenes generated with Python. Click any image to see it full size, or switch to Wireframe to see the mesh.</p>
+    </div>
+
+    <div class="group-head">
+      <span class="group-no">01</span><h3>Hand-modelled</h3>
+      <span class="group-note">Modelled by hand in Blender, shown in a studio lighting setup</span>
     </div>
     <div class="gallery">
       <figure class="render wide" data-view="render">
         <div class="shot">
-          <img class="v-render" src="renders/pistol.jpg" width="2400" height="1500" alt="A black pistol with green and red sights, a stippled grip, an under-rail flashlight and a long suppressor, standing beside its ejected magazine on a dark studio floor with blue rim light">
+          <img class="v-render" src="renders/pistol.jpg" width="2400" height="1500" alt="A black pistol with green and red sights, a stippled grip, an under-rail flashlight and a long suppressor, standing beside its ejected magazine on a dark studio floor with blue rim light" loading="lazy">
           <img class="v-wire" src="renders/pistol-wire.jpg" width="1600" height="1000" alt="The pistol in grey clay with a wireframe overlay showing its mesh topology" loading="lazy">
           <div class="views" role="group" aria-label="Suppressed Pistol view">
             <button type="button" data-show="render" aria-pressed="true">Render</button>
             <button type="button" data-show="wire" aria-pressed="false">Wireframe</button>
+            <button type="button" class="expand" aria-label="View full size">⤢</button>
           </div>
+        </div>
+        <div class="details">
+          <button type="button" class="detail"><img src="renders/pistol-sights.jpg" width="1600" height="1000" alt="Close-up of the pistol's serrated slide and glowing green rear sights" loading="lazy"><span>Slide &amp; sights</span></button>
+          <button type="button" class="detail"><img src="renders/pistol-light.jpg" width="1600" height="1000" alt="Close-up of the under-rail flashlight and its knurled cap" loading="lazy"><span>Flashlight</span></button>
         </div>
         <figcaption>
           <div class="r-top"><h3>Suppressed Pistol</h3><span class="r-tag">Hand-modelled · Hard surface</span></div>
-          <p>Modelled by hand in Blender: a serrated slide with green and red sights, a stippled grip, an under-rail flashlight, a suppressor and an ejected magazine. Shown in a studio lighting setup.</p>
-          <div class="r-stats">34,146 tris · 19 materials · Cycles 640 samples · 2400×1500 in 10.6s</div>
+          <p>A serrated slide with green and red sights, a stippled grip, an under-rail flashlight, a suppressor and an ejected magazine, all modelled by hand.</p>
+          <div class="r-stats">34,146 tris · 20 objects · 19 materials · Cycles 640 samples · 2400×1500 in 11.0s</div>
         </figcaption>
       </figure>
+      <figure class="render wide" data-view="render">
+        <div class="shot">
+          <img class="v-render" src="renders/smiler.jpg" width="2400" height="1500" alt="A white, untextured roller coaster train of four cars with sculpted seats and a smiley face on the front panel, on a dark studio floor with blue rim light" loading="lazy">
+          <img class="v-wire" src="renders/smiler-wire.jpg" width="1600" height="1000" alt="The coaster train in grey clay with a wireframe overlay showing its mesh topology" loading="lazy">
+          <div class="views" role="group" aria-label="Smiler Coaster Train view">
+            <button type="button" data-show="render" aria-pressed="true">Render</button>
+            <button type="button" data-show="wire" aria-pressed="false">Wireframe</button>
+            <button type="button" class="expand" aria-label="View full size">⤢</button>
+          </div>
+        </div>
+        <div class="details">
+          <button type="button" class="detail"><img src="renders/smiler-seats.jpg" width="1600" height="1000" alt="Close-up of the coaster seats with their restraints and grab handles" loading="lazy"><span>Seats &amp; restraints</span></button>
+          <button type="button" class="detail"><img src="renders/smiler-wheels.jpg" width="1600" height="1000" alt="Close-up of a coaster wheel bogie with its wheels, brackets and bolts" loading="lazy"><span>Wheel bogie</span></button>
+        </div>
+        <figcaption>
+          <div class="r-top"><h3>Smiler Coaster Train</h3><span class="r-tag">Hand-modelled · Fan model</span></div>
+          <p>A fan model of The Smiler's train, built from 846 parts: four cars of sculpted seats with restraints and grab handles, the smiley front panel, and full wheel bogies down to the bolts. Shown untextured, as pure modelling.</p>
+          <div class="r-stats">11.37M tris · 846 objects · Cycles 640 samples · 2400×1500 in 19.7s</div>
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="group-head">
+      <span class="group-no">02</span><h3>Procedural scenes</h3>
+      <span class="group-note">The economy system's shop items, generated by a Python script (AI-assisted)</span>
+    </div>
+    <div class="gallery">
       <figure class="render wide" data-view="render">
         <div class="shot">
           <img class="v-render" src="renders/potion.jpg" width="2400" height="1500" alt="A wax-sealed glass flask of clear ruby-red potion with a parchment label and twine, beside gold coins and a blue gem on a walnut table, with warm lights blurred behind" loading="lazy">
@@ -304,10 +381,11 @@
           <div class="views" role="group" aria-label="Health Potion view">
             <button type="button" data-show="render" aria-pressed="true">Render</button>
             <button type="button" data-show="wire" aria-pressed="false">Wireframe</button>
+            <button type="button" class="expand" aria-label="View full size">⤢</button>
           </div>
         </div>
         <figcaption>
-          <div class="r-top"><h3>Health Potion</h3><span class="r-tag">Shop item · Potion</span></div>
+          <div class="r-top"><h3>Health Potion</h3><span class="r-tag">Procedural · Shop item</span></div>
           <p>Lathed glass with real wall thickness and a clear ruby liquid rendered as a volume, sealed with dripping wax, tied with twine and labelled, beside the game's Coins and a Gem.</p>
           <div class="r-stats">75,312 tris · 10 materials · Cycles 640 samples · 2400×1500 in 29.8s</div>
         </figcaption>
@@ -319,10 +397,11 @@
           <div class="views" role="group" aria-label="Iron Sword view">
             <button type="button" data-show="render" aria-pressed="true">Render</button>
             <button type="button" data-show="wire" aria-pressed="false">Wireframe</button>
+            <button type="button" class="expand" aria-label="View full size">⤢</button>
           </div>
         </div>
         <figcaption>
-          <div class="r-top"><h3>Iron Sword</h3><span class="r-tag">Shop item · Sword</span></div>
+          <div class="r-top"><h3>Iron Sword</h3><span class="r-tag">Procedural · Shop item</span></div>
           <p>A fullered blade with glowing inlaid runes, curved gold quillons, a spiral-wrapped grip and a gem-set pommel, in a mossy stone under volumetric light.</p>
           <div class="r-stats">11,820 tris · 5 materials · 2400×1500 in 45.7s</div>
         </figcaption>
@@ -334,10 +413,11 @@
           <div class="views" role="group" aria-label="Golden Crown view">
             <button type="button" data-show="render" aria-pressed="true">Render</button>
             <button type="button" data-show="wire" aria-pressed="false">Wireframe</button>
+            <button type="button" class="expand" aria-label="View full size">⤢</button>
           </div>
         </div>
         <figcaption>
-          <div class="r-top"><h3>Golden Crown</h3><span class="r-tag">Shop item · Crown</span></div>
+          <div class="r-top"><h3>Golden Crown</h3><span class="r-tag">Procedural · Shop item</span></div>
           <p>Hammered gold with four pearl-beaded arches under an orb and cross, faceted gems in bezel settings and rows of pearls, on a piped velvet cushion with tassels.</p>
           <div class="r-stats">62,038 tris · 7 materials · 2400×1500 in 16.2s</div>
         </figcaption>
@@ -346,10 +426,10 @@
 
     <div class="blender-foot">
       <ol class="pipeline">
-        <li><h3>Model by hand and in code</h3><p>The pistol is modelled by hand. The shop items are built with Blender's Python API: lofted blade sections, lathed glass, swept tubes for wraps and arches, faceted gem cuts and noise-shaped rock.</p></li>
+        <li><h3>Model by hand and in code</h3><p>The pistol and coaster train are modelled by hand. The shop items are built with Blender's Python API: lofted blade sections, lathed glass, swept tubes for wraps and arches, faceted gem cuts and noise-shaped rock.</p></li>
         <li><h3>Material &amp; light</h3><p>The shop items are fully procedural, with no image textures: hammered gold, brushed steel, velvet, cork, walnut grain and mossy stone. Three-point lighting, reflection cards, and spotlights through haze.</p></li>
-        <li><h3>Render &amp; finish</h3><p>Cycles on the GPU with OptiX at 640 samples, denoised, then finished in Blender's compositor with bloom, a touch of chromatic aberration and a vignette.</p></li>
-        <li><h3>Topology</h3><p>Every scene also renders as clay with a wireframe overlay, so the modelling holds up to a close look. Switch any image above to Wireframe to see it.</p></li>
+        <li><h3>Render &amp; finish</h3><p>Cycles on the GPU with OptiX at 640 samples, denoised, then finished in Blender's compositor with bloom and a vignette. Close-ups use a long lens and shallow depth of field.</p></li>
+        <li><h3>Topology</h3><p>Every piece also renders as clay with a wireframe overlay, so the modelling holds up to a close look. Switch any image above to Wireframe to see it.</p></li>
       </ol>
       <div class="links">
         <a href="https://github.com/fornorharry/fornorharry.github.io/blob/main/blender/build_scenes.py">Read the build script <span>Python · bpy</span></a>
@@ -361,6 +441,12 @@
     </div>
   </div>
 </section>
+
+<dialog id="viewer" aria-label="Full size image">
+  <button type="button" class="viewer-close" aria-label="Close">×</button>
+  <img alt="">
+  <p class="viewer-cap"></p>
+</dialog>
 
 <section id="systems">
   <div class="wrap">
@@ -570,15 +656,43 @@
 
 <script>
   // Render / Wireframe switch on each Blender piece.
-  document.querySelectorAll(".render .views button").forEach(function (btn) {
+  document.querySelectorAll(".render .views button[data-show]").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var figure = btn.closest(".render");
       figure.setAttribute("data-view", btn.getAttribute("data-show"));
-      figure.querySelectorAll(".views button").forEach(function (other) {
+      figure.querySelectorAll(".views button[data-show]").forEach(function (other) {
         other.setAttribute("aria-pressed", other === btn ? "true" : "false");
       });
     });
   });
+
+  // Full-size viewer for every render, wireframe and close-up.
+  (function () {
+    var viewer = document.getElementById("viewer");
+    var img = viewer.querySelector("img"), cap = viewer.querySelector(".viewer-cap");
+    function open(source) {
+      img.src = source.currentSrc || source.src;
+      img.alt = source.alt;
+      cap.textContent = source.alt;
+      if (viewer.showModal) viewer.showModal(); else viewer.setAttribute("open", "");
+    }
+    function shown(figure) {
+      return figure.querySelector(figure.getAttribute("data-view") === "wire" ? ".v-wire" : ".v-render");
+    }
+    document.querySelectorAll(".render").forEach(function (figure) {
+      figure.querySelectorAll(".shot img").forEach(function (shot) {
+        shot.addEventListener("click", function () { open(shot); });
+      });
+      var expand = figure.querySelector(".expand");
+      if (expand) expand.addEventListener("click", function () { open(shown(figure)); });
+    });
+    document.querySelectorAll(".detail").forEach(function (btn) {
+      btn.addEventListener("click", function () { open(btn.querySelector("img")); });
+    });
+    viewer.querySelector(".viewer-close").addEventListener("click", function () { viewer.close(); });
+    // A click on the dark area around the image closes it too.
+    viewer.addEventListener("click", function (e) { if (e.target === viewer) viewer.close(); });
+  })();
 
   // Theme toggle. Remembers the choice per viewer, and works without storage too.
   (function () {
