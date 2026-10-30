@@ -166,6 +166,26 @@
   .log .okc{color:var(--console-ok)}
   .log .warn{color:var(--console-warn)}
 
+  /* full module source under each system */
+  .src{grid-column:1/-1;border-top:1px solid var(--line);background:var(--console);color:var(--console-fg);min-width:0}
+  .src summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:6px 16px;flex-wrap:wrap;
+    padding:12px 16px;font-family:var(--mono);font-size:.74rem;color:var(--console-dim)}
+  .src summary::-webkit-details-marker{display:none}
+  .src summary b{color:var(--console-fg);font-weight:600}
+  .src summary > span:first-child::before{content:"+ ";color:var(--console-key)}
+  .src[open] summary > span:first-child::before{content:"– "}
+  .src[open] summary{border-bottom:1px solid var(--console-line)}
+  .src-body{display:grid;grid-template-columns:auto minmax(0,1fr);max-height:520px;overflow:auto;overscroll-behavior:contain}
+  .src-body pre{overflow:visible;font-size:.74rem;line-height:1.65;padding-block:14px 18px}
+  .src-ln{position:sticky;left:0;padding-inline:14px 12px;text-align:right;color:var(--console-dim);
+    background:var(--console);border-right:1px solid var(--console-line);user-select:none}
+  .src-code{padding-inline:16px 24px}
+  .src .k{color:var(--console-key)}
+  .src .s{color:var(--console-str)}
+  .src .c{color:var(--console-dim)}
+  .src .n{color:var(--console-ok)}
+  .src .f{color:#fff;font-weight:600}
+
   /* exploit table */
   .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
   table{width:100%;border-collapse:collapse;min-width:640px}
@@ -289,7 +309,7 @@
       </div>
       <div class="counts" aria-label="Portfolio at a glance">
         <div class="count"><b>3</b><span>production systems</span></div>
-        <div class="count"><b>49</b><span>strict-typed modules</span></div>
+        <div class="count"><b>52</b><span>strict-typed modules</span></div>
         <div class="count"><b>40</b><span>attacks reviewed</span></div>
         <div class="count"><b>3/3</b><span>gaps patched &amp; re-tested</span></div>
         <div class="count"><b>9</b><span>Blender renders</span></div>
@@ -523,13 +543,13 @@
   <div class="wrap">
     <div class="sechead">
       <h2>Flagship systems</h2>
-      <p>Each one is server-authoritative, typed, and ships with a README. The logs beside each system are results from real Studio test runs.</p>
+      <p>Each one is server-authoritative, typed, and ships with a README. The logs beside each system are results from real Studio test runs, and under each one is the full source of one of its modules.</p>
     </div>
     <div class="systems">
 
       <article class="sys">
         <div class="sys-body">
-          <div class="sys-top"><span class="sys-no">SYSTEM 01</span><span class="sys-meta">20 modules · Rojo project</span></div>
+          <div class="sys-top"><span class="sys-no">SYSTEM 01</span><span class="sys-meta">21 modules · Rojo project</span></div>
           <h3>Combat</h3>
           <p class="desc">Server-authoritative melee combat. The client asks to attack and the server decides what got hit, with hit-stop and camera feel layered on top.</p>
           <ul class="feat">
@@ -567,11 +587,497 @@
 <span class="cmd">&gt; camera after shake + kick + FOV punch</span>
   FOV 70 → 74.48 → <span class="okc">70.00</span> <span class="dim">· drift 0.000°</span></pre>
         </div>
+        <details class="src" open>
+          <summary><span><b>LagCompensation.luau</b> · Lag compensation</span><span>server · 242 lines · --!strict</span></summary>
+          <div class="src-body"><pre class="src-ln" aria-hidden="true">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242</pre><pre class="src-code"><code><span class="c">--!strict</span>
+<span class="c">-- Lag compensation for hit detection. A client sees everyone else slightly in the past:</span>
+<span class="c">-- the target's position had to travel from the server to the attacker, the attacker's</span>
+<span class="c">-- request had to travel back, and Roblox renders other characters a little behind on top</span>
+<span class="c">-- of that to keep their movement smooth. So a swing that clearly connects on the</span>
+<span class="c">-- attacker's screen can miss on the server, where the target has already moved on.</span>
+<span class="c">--</span>
+<span class="c">-- This keeps a short history of where every tracked rig has been, and checks a hit</span>
+<span class="c">-- against where the targets were when the attacker actually saw them. The rewind is</span>
+<span class="c">-- capped, so claiming a huge ping can't reach someone who walked away a second ago.</span>
+<span class="c">--</span>
+<span class="c">-- Each rig's history is a fixed-size ring buffer. Recording is a couple of field writes</span>
+<span class="c">-- per rig per frame, and after the first lap nothing new is allocated.</span>
+<span class="c">--</span>
+<span class="c">-- To use it, call LagCompensation.Box where CombatService calls Hitbox.Box, passing</span>
+<span class="c">-- LagCompensation.ViewTime(player, os.clock()) as the time.</span>
+
+<span class="k">local</span> CollectionService = game:GetService(<span class="s">"CollectionService"</span>)
+<span class="k">local</span> Players = game:GetService(<span class="s">"Players"</span>)
+<span class="k">local</span> ReplicatedStorage = game:GetService(<span class="s">"ReplicatedStorage"</span>)
+<span class="k">local</span> RunService = game:GetService(<span class="s">"RunService"</span>)
+
+<span class="k">local</span> Config = require(ReplicatedStorage.Combat.Config)
+<span class="k">local</span> Types = require(ReplicatedStorage.Combat.Types)
+<span class="k">local</span> Rig = require(script.Parent.Rig)
+
+<span class="c">-- The furthest back a hit may be checked, in seconds. Raising it is kinder to players on</span>
+<span class="c">-- bad connections, and to exploiters faking a bad connection.</span>
+<span class="k">local</span> MAX_REWIND = <span class="n">0.35</span>
+<span class="c">-- Roughly how far behind the server a client renders other characters, on top of ping.</span>
+<span class="k">local</span> INTERPOLATION_DELAY = <span class="n">0.1</span>
+<span class="c">-- Samples kept per rig. At the server's 60 Hz that's 0.8s, well past MAX_REWIND even</span>
+<span class="c">-- through a run of slow frames.</span>
+<span class="k">local</span> CAPACITY = <span class="n">48</span>
+<span class="c">-- A root is a single point, but a body is about 4 x 5 x 2 studs. The query box grows by</span>
+<span class="c">-- this much on each side, so a hit on a shoulder still counts.</span>
+<span class="k">local</span> BODY_HALF = Vector3.new(<span class="n">2</span>, <span class="n">2.5</span>, <span class="n">1</span>)
+<span class="c">-- Players' characters are tracked automatically. NPCs and test dummies opt in with this tag.</span>
+<span class="k">local</span> TAG = <span class="s">"LagCompensated"</span>
+
+<span class="k">type</span> Sample = { Time: number, CFrame: CFrame }
+<span class="k">type</span> Track = {
+	Root: BasePart?, <span class="c">-- the root the samples belong to; a new one (respawn) clears them</span>
+	Samples: { Sample },
+	Head: number, <span class="c">-- slot of the newest sample</span>
+	Count: number, <span class="c">-- samples held, up to CAPACITY</span>
+	Connection: RBXScriptConnection?,
+}
+<span class="k">type</span> Candidate = { Rig: Types.LiveRig, Position: Vector3, Distance: number }
+
+<span class="k">local</span> LagCompensation = {}
+
+<span class="k">local</span> tracks: { [Model]: Track } = {}
+
+<span class="c">-- Logical index 1 is the oldest sample held and Count the newest, wherever they sit in</span>
+<span class="c">-- the ring.</span>
+<span class="k">local</span> <span class="k">function</span> <span class="f">sampleAt</span>(track: Track, index: number): Sample
+	<span class="k">return</span> track.Samples[(track.Head - track.Count + index - <span class="n">1</span>) % CAPACITY + <span class="n">1</span>]
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">record</span>(track: Track, root: BasePart, now: number)
+	<span class="k">local</span> head = track.Head % CAPACITY + <span class="n">1</span>
+	<span class="k">local</span> slot = track.Samples[head]
+	<span class="c">-- Once the ring has wrapped, the oldest sample is overwritten in place.</span>
+	<span class="k">if</span> slot <span class="k">then</span>
+		slot.Time = now
+		slot.CFrame = root.CFrame
+	<span class="k">else</span>
+		track.Samples[head] = { Time = now, CFrame = root.CFrame }
+	<span class="k">end</span>
+	track.Head = head
+	track.Count = math.min(track.Count + <span class="n">1</span>, CAPACITY)
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">step</span>()
+	<span class="k">local</span> now = os.clock()
+	<span class="k">for</span> model, track <span class="k">in</span> tracks <span class="k">do</span>
+		<span class="k">local</span> rig = Rig.GetLive(model)
+		<span class="k">if</span> <span class="k">not</span> rig <span class="k">then</span>
+			<span class="c">-- Dead or out of the world. The next life may start somewhere else entirely,</span>
+			<span class="c">-- so there's nothing worth rewinding to.</span>
+			track.Count = <span class="n">0</span>
+			<span class="k">continue</span>
+		<span class="k">end</span>
+		<span class="k">if</span> track.Root ~= rig.Root <span class="k">then</span>
+			track.Root = rig.Root
+			track.Count = <span class="n">0</span>
+		<span class="k">end</span>
+		record(track, rig.Root, now)
+	<span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="f">LagCompensation</span>.<span class="f">Untrack</span>(model: Model)
+	<span class="k">local</span> track = tracks[model]
+	<span class="k">if</span> <span class="k">not</span> track <span class="k">then</span>
+		<span class="k">return</span>
+	<span class="k">end</span>
+	<span class="k">if</span> track.Connection <span class="k">then</span>
+		track.Connection:Disconnect()
+	<span class="k">end</span>
+	tracks[model] = <span class="k">nil</span>
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="f">LagCompensation</span>.<span class="f">Track</span>(model: Model)
+	<span class="k">if</span> tracks[model] <span class="k">then</span>
+		<span class="k">return</span>
+	<span class="k">end</span>
+	<span class="k">local</span> track: Track = { Root = <span class="k">nil</span>, Samples = {}, Head = <span class="n">0</span>, Count = <span class="n">0</span>, Connection = <span class="k">nil</span> }
+	tracks[model] = track
+	<span class="c">-- Gone from the game for good (destroyed, or parented to nil): stop tracking it.</span>
+	track.Connection = model.AncestryChanged:Connect(<span class="k">function</span>()
+		<span class="k">if</span> <span class="k">not</span> model:IsDescendantOf(game) <span class="k">then</span>
+			LagCompensation.Untrack(model)
+		<span class="k">end</span>
+	<span class="k">end</span>)
+<span class="k">end</span>
+
+<span class="c">-- The moment, on the server's clock, whose positions the player was looking at.</span>
+<span class="k">function</span> <span class="f">LagCompensation</span>.<span class="f">ViewTime</span>(player: Player, now: number): number
+	<span class="c">-- GetNetworkPing is the full round trip: half for the positions to reach the player,</span>
+	<span class="c">-- half for their request to come back.</span>
+	<span class="k">local</span> behind = player:GetNetworkPing() + INTERPOLATION_DELAY
+	<span class="k">return</span> now - math.clamp(behind, <span class="n">0</span>, MAX_REWIND)
+<span class="k">end</span>
+
+<span class="c">-- Where a tracked rig's root was at `time`, blended between the samples either side of</span>
+<span class="c">-- it. Times past either end of the history get that end.</span>
+<span class="k">function</span> <span class="f">LagCompensation</span>.<span class="f">CFrameAt</span>(model: Model, time: number): CFrame?
+	<span class="k">local</span> track = tracks[model]
+	<span class="k">if</span> <span class="k">not</span> track <span class="k">or</span> track.Count == <span class="n">0</span> <span class="k">then</span>
+		<span class="k">return</span> <span class="k">nil</span>
+	<span class="k">end</span>
+	<span class="k">local</span> newest = sampleAt(track, track.Count)
+	<span class="k">if</span> time &gt;= newest.Time <span class="k">then</span>
+		<span class="k">return</span> newest.CFrame
+	<span class="k">end</span>
+	<span class="k">local</span> oldest = sampleAt(track, <span class="n">1</span>)
+	<span class="k">if</span> time &lt;= oldest.Time <span class="k">then</span>
+		<span class="k">return</span> oldest.CFrame
+	<span class="k">end</span>
+
+	<span class="c">-- Binary search for the pair of samples around `time`. Samples are in time order, so</span>
+	<span class="c">-- low always stays at or before it and high always after it.</span>
+	<span class="k">local</span> low, high = <span class="n">1</span>, track.Count
+	<span class="k">while</span> high - low &gt; <span class="n">1</span> <span class="k">do</span>
+		<span class="k">local</span> mid = (low + high) // <span class="n">2</span>
+		<span class="k">if</span> sampleAt(track, mid).Time &lt;= time <span class="k">then</span>
+			low = mid
+		<span class="k">else</span>
+			high = mid
+		<span class="k">end</span>
+	<span class="k">end</span>
+	<span class="k">local</span> before, after = sampleAt(track, low), sampleAt(track, high)
+	<span class="k">local</span> alpha = (time - before.Time) / (after.Time - before.Time)
+	<span class="k">return</span> before.CFrame:Lerp(after.CFrame, alpha)
+<span class="k">end</span>
+
+<span class="c">-- Every rig whose root was inside the box at `time`, nearest first. The rules are the</span>
+<span class="c">-- same as Hitbox's: alive now, not spawn-protected, within `maxRange`, not behind a wall,</span>
+<span class="c">-- at most Config.Hit.MaxTargets. Only the positions are rewound. Walls don't move, so</span>
+<span class="c">-- line of sight is checked against the world as it is now.</span>
+<span class="k">function</span> <span class="f">LagCompensation</span>.<span class="f">Box</span>(attacker: Types.LiveRig, cframe: CFrame, size: Vector3, maxRange: number, time: number): { Types.LiveRig }
+	<span class="k">local</span> half = size / <span class="n">2</span> + BODY_HALF
+	<span class="k">local</span> origin = attacker.Root.Position
+	<span class="k">local</span> candidates: { Candidate } = {}
+	<span class="c">-- Fighters don't count as walls, as in Hitbox.</span>
+	<span class="k">local</span> fighters: { Instance } = {}
+
+	<span class="k">for</span> model <span class="k">in</span> tracks <span class="k">do</span>
+		table.insert(fighters, model)
+		<span class="k">if</span> model == attacker.Model <span class="k">then</span>
+			<span class="k">continue</span>
+		<span class="k">end</span>
+		<span class="k">local</span> rig = Rig.GetLive(model)
+		<span class="k">if</span> <span class="k">not</span> rig <span class="k">or</span> Rig.IsProtected(rig) <span class="k">then</span>
+			<span class="k">continue</span>
+		<span class="k">end</span>
+		<span class="k">local</span> past = LagCompensation.CFrameAt(model, time)
+		<span class="k">if</span> <span class="k">not</span> past <span class="k">then</span>
+			<span class="k">continue</span>
+		<span class="k">end</span>
+		<span class="c">-- The rewound root in the box's own space. Inside means within half the box on</span>
+		<span class="c">-- every axis.</span>
+		<span class="k">local</span> offset = cframe:PointToObjectSpace(past.Position)
+		<span class="k">if</span> math.abs(offset.X) &gt; half.X <span class="k">or</span> math.abs(offset.Y) &gt; half.Y <span class="k">or</span> math.abs(offset.Z) &gt; half.Z <span class="k">then</span>
+			<span class="k">continue</span>
+		<span class="k">end</span>
+		<span class="k">local</span> distance = (past.Position - origin).Magnitude
+		<span class="k">if</span> distance &lt;= maxRange <span class="k">then</span>
+			table.insert(candidates, { Rig = rig, Position = past.Position, Distance = distance })
+		<span class="k">end</span>
+	<span class="k">end</span>
+
+	table.sort(candidates, <span class="k">function</span>(a: Candidate, b: Candidate): boolean
+		<span class="k">return</span> a.Distance &lt; b.Distance
+	<span class="k">end</span>)
+
+	<span class="k">local</span> wallParams = RaycastParams.new()
+	wallParams.FilterType = Enum.RaycastFilterType.Exclude
+	wallParams.FilterDescendantsInstances = fighters
+	wallParams.RespectCanCollide = <span class="k">true</span>
+
+	<span class="k">local</span> hits: { Types.LiveRig } = {}
+	<span class="k">for</span> _, candidate <span class="k">in</span> candidates <span class="k">do</span>
+		<span class="k">if</span> #hits &gt;= Config.Hit.MaxTargets <span class="k">then</span>
+			<span class="k">break</span>
+		<span class="k">end</span>
+		<span class="k">if</span> Config.Hit.LineOfSight <span class="k">and</span> workspace:Raycast(origin, candidate.Position - origin, wallParams) <span class="k">then</span>
+			<span class="k">continue</span>
+		<span class="k">end</span>
+		table.insert(hits, candidate.Rig)
+	<span class="k">end</span>
+	<span class="k">return</span> hits
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="f">LagCompensation</span>.<span class="f">Start</span>()
+	<span class="k">local</span> <span class="k">function</span> <span class="f">watch</span>(player: Player)
+		player.CharacterAdded:Connect(LagCompensation.Track)
+		<span class="k">local</span> character = player.Character
+		<span class="k">if</span> character <span class="k">then</span>
+			LagCompensation.Track(character)
+		<span class="k">end</span>
+	<span class="k">end</span>
+	Players.PlayerAdded:Connect(watch)
+	<span class="k">for</span> _, player <span class="k">in</span> Players:GetPlayers() <span class="k">do</span>
+		watch(player)
+	<span class="k">end</span>
+
+	<span class="k">local</span> <span class="k">function</span> <span class="f">onTagged</span>(instance: Instance)
+		<span class="k">if</span> instance:IsA(<span class="s">"Model"</span>) <span class="k">then</span>
+			LagCompensation.Track(instance)
+		<span class="k">end</span>
+	<span class="k">end</span>
+	CollectionService:GetInstanceAddedSignal(TAG):Connect(onTagged)
+	<span class="k">for</span> _, instance <span class="k">in</span> CollectionService:GetTagged(TAG) <span class="k">do</span>
+		onTagged(instance)
+	<span class="k">end</span>
+
+	RunService.Heartbeat:Connect(step)
+<span class="k">end</span>
+
+<span class="k">return</span> LagCompensation</code></pre></div>
+        </details>
       </article>
 
       <article class="sys">
         <div class="sys-body">
-          <div class="sys-top"><span class="sys-no">SYSTEM 02</span><span class="sys-meta">16 modules · Rojo project</span></div>
+          <div class="sys-top"><span class="sys-no">SYSTEM 02</span><span class="sys-meta">17 modules · Rojo project</span></div>
           <h3>Data &amp; Saving</h3>
           <p class="desc">Player data that is only ever live on one server, upgrades old saves cleanly, and never writes over a save it can't read.</p>
           <ul class="feat">
@@ -611,11 +1117,359 @@
 <span class="cmd">&gt; AddCurrency with NaN, 1.5, -50, "Robux"</span>
   <span class="okc">false · false · false · false</span></pre>
         </div>
+        <details class="src" open>
+          <summary><span><b>Diff.luau</b> · Delta replication</span><span>shared · 173 lines · --!strict</span></summary>
+          <div class="src-body"><pre class="src-ln" aria-hidden="true">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173</pre><pre class="src-code"><code><span class="c">--!strict</span>
+<span class="c">-- Works out the smallest set of changes that turns one copy of a player's data into</span>
+<span class="c">-- another, and applies those changes to a copy somewhere else.</span>
+<span class="c">--</span>
+<span class="c">-- Replicator sends whole sections, so one coin earned resends the entire Currencies</span>
+<span class="c">-- table and one item picked up resends the whole Inventory. With this, the server keeps</span>
+<span class="c">-- a snapshot of what each client was last sent, diffs the live data against it, and sends</span>
+<span class="c">-- only the paths that changed. The client applies them to its copy and ends up identical.</span>
+<span class="c">--</span>
+<span class="c">-- Patches are plain tables of strings, numbers and booleans, so they cross a RemoteEvent</span>
+<span class="c">-- unchanged.</span>
+
+<span class="k">export</span> <span class="k">type</span> Key = string | number
+<span class="k">export</span> <span class="k">type</span> Patch = { Path: { Key }, Kind: <span class="s">"Set"</span>, Value: unknown } | { Path: { Key }, Kind: <span class="s">"Remove"</span> }
+<span class="k">type</span> Table = { [unknown]: unknown }
+
+<span class="c">-- Deeper than this is a bug or a cycle, not player data.</span>
+<span class="k">local</span> MAX_DEPTH = <span class="n">16</span>
+<span class="c">-- When most of a table changed, one patch that replaces it is smaller than one per key.</span>
+<span class="c">-- Only for tables with at least this many changes, so small edits stay precise.</span>
+<span class="k">local</span> COALESCE_MIN = <span class="n">4</span>
+
+<span class="k">local</span> Diff = {}
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">copy</span>(value: unknown): unknown
+	<span class="k">if</span> typeof(value) ~= <span class="s">"table"</span> <span class="k">then</span>
+		<span class="k">return</span> value
+	<span class="k">end</span>
+	<span class="k">local</span> result: Table = {}
+	<span class="k">for</span> key, child <span class="k">in</span> value :: Table <span class="k">do</span>
+		result[key] = copy(child)
+	<span class="k">end</span>
+	<span class="k">return</span> result
+<span class="k">end</span>
+
+<span class="c">-- NaN never equals itself, so without this a NaN anywhere would be reported as changed on</span>
+<span class="c">-- every single diff.</span>
+<span class="k">local</span> <span class="k">function</span> <span class="f">same</span>(a: unknown, b: unknown): boolean
+	<span class="k">return</span> a == b <span class="k">or</span> (a ~= a <span class="k">and</span> b ~= b)
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">count</span>(t: Table): number
+	<span class="k">local</span> n = <span class="n">0</span>
+	<span class="k">for</span> _ <span class="k">in</span> t <span class="k">do</span>
+		n += <span class="n">1</span>
+	<span class="k">end</span>
+	<span class="k">return</span> n
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">setPatch</span>(path: { Key }, value: unknown): Patch
+	<span class="k">return</span> { Path = table.clone(path), Kind = <span class="s">"Set"</span>, Value = copy(value) }
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">removePatch</span>(path: { Key }): Patch
+	<span class="k">return</span> { Path = table.clone(path), Kind = <span class="s">"Remove"</span> }
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">where</span>(path: { Key }): string
+	<span class="k">return</span> <span class="k">if</span> #path &gt; <span class="n">0</span> <span class="k">then</span> table.concat(path, <span class="s">"."</span>) <span class="k">else</span> <span class="s">"the root"</span>
+<span class="k">end</span>
+
+<span class="c">-- `path` is one shared stack, pushed and popped on the way down, and only copied when a</span>
+<span class="c">-- patch is actually written. A diff with no changes allocates nothing.</span>
+<span class="k">local</span> <span class="k">function</span> <span class="f">walk</span>(old: Table, new: Table, path: { Key }, out: { Patch }, depth: number)
+	<span class="k">if</span> depth &gt; MAX_DEPTH <span class="k">then</span>
+		error(<span class="s">`Diff: nested deeper than {MAX_DEPTH} at {where(path)}`</span>)
+	<span class="k">end</span>
+
+	<span class="k">for</span> key, value <span class="k">in</span> new <span class="k">do</span>
+		<span class="k">local</span> before = old[key]
+		<span class="k">if</span> same(before, value) <span class="k">then</span>
+			<span class="k">continue</span>
+		<span class="k">end</span>
+		<span class="k">if</span> typeof(key) ~= <span class="s">"string"</span> <span class="k">and</span> typeof(key) ~= <span class="s">"number"</span> <span class="k">then</span>
+			error(<span class="s">`Diff: a {typeof(key)} key under {where(path)} can't be replicated`</span>)
+		<span class="k">end</span>
+		table.insert(path, key :: Key)
+
+		<span class="k">if</span> typeof(value) == <span class="s">"table"</span> <span class="k">and</span> typeof(before) == <span class="s">"table"</span> <span class="k">then</span>
+			<span class="c">-- Both sides are tables: diff inside them, then keep whichever is smaller, the</span>
+			<span class="c">-- precise patches or one patch replacing the whole table.</span>
+			<span class="k">local</span> nested: { Patch } = {}
+			walk(before :: Table, value :: Table, path, nested, depth + <span class="n">1</span>)
+			<span class="k">if</span> #nested &gt;= COALESCE_MIN <span class="k">and</span> #nested * <span class="n">2</span> &gt;= count(value :: Table) <span class="k">then</span>
+				table.insert(out, setPatch(path, value))
+			<span class="k">else</span>
+				table.move(nested, <span class="n">1</span>, #nested, #out + <span class="n">1</span>, out)
+			<span class="k">end</span>
+		<span class="k">else</span>
+			table.insert(out, setPatch(path, value))
+		<span class="k">end</span>
+
+		table.remove(path)
+	<span class="k">end</span>
+
+	<span class="k">for</span> key <span class="k">in</span> old <span class="k">do</span>
+		<span class="k">if</span> new[key] == <span class="k">nil</span> <span class="k">then</span>
+			table.insert(path, key :: Key)
+			table.insert(out, removePatch(path))
+			table.remove(path)
+		<span class="k">end</span>
+	<span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c">-- Walks to the table that holds the last key of `path`. With `create`, missing tables on</span>
+<span class="c">-- the way are made. Returns (nil, true) when there's nothing there to change, and</span>
+<span class="c">-- (nil, false) when the path runs into something that isn't a table.</span>
+<span class="k">local</span> <span class="k">function</span> <span class="f">parentOf</span>(root: Table, path: { Key }, create: boolean): (Table?, boolean)
+	<span class="k">local</span> node = root
+	<span class="k">for</span> i = <span class="n">1</span>, #path - <span class="n">1</span> <span class="k">do</span>
+		<span class="k">local</span> child = node[path[i]]
+		<span class="k">if</span> child == <span class="k">nil</span> <span class="k">then</span>
+			<span class="k">if</span> <span class="k">not</span> create <span class="k">then</span>
+				<span class="k">return</span> <span class="k">nil</span>, <span class="k">true</span>
+			<span class="k">end</span>
+			child = {}
+			node[path[i]] = child
+		<span class="k">elseif</span> typeof(child) ~= <span class="s">"table"</span> <span class="k">then</span>
+			<span class="k">return</span> <span class="k">nil</span>, <span class="k">false</span>
+		<span class="k">end</span>
+		node = child :: Table
+	<span class="k">end</span>
+	<span class="k">return</span> node, <span class="k">true</span>
+<span class="k">end</span>
+
+<span class="c">-- A deep copy that shares no tables with the original. Diff against a snapshot, never</span>
+<span class="c">-- against a table the live data still points into, or changes inside it are invisible.</span>
+<span class="k">function</span> <span class="f">Diff</span>.<span class="f">Snapshot</span>&lt;T&gt;(value: T): T
+	<span class="k">return</span> copy(value) :: any
+<span class="k">end</span>
+
+<span class="c">-- Every change that turns `old` into `new`. Neither table is modified.</span>
+<span class="k">function</span> <span class="f">Diff</span>.<span class="f">Compute</span>(old: Table, new: Table): { Patch }
+	<span class="k">local</span> out: { Patch } = {}
+	walk(old, new, {}, out, <span class="n">1</span>)
+	<span class="k">return</span> out
+<span class="k">end</span>
+
+<span class="c">-- Applies patches in order. Returns false if a path runs through something that isn't a</span>
+<span class="c">-- table, which means the two copies have drifted apart: the caller should ask for a full</span>
+<span class="c">-- resync rather than keep patching a copy that's already wrong.</span>
+<span class="k">function</span> <span class="f">Diff</span>.<span class="f">Apply</span>(target: Table, patches: { Patch }): boolean
+	<span class="k">for</span> _, patch <span class="k">in</span> patches <span class="k">do</span>
+		<span class="k">local</span> path = patch.Path
+		<span class="k">if</span> #path == <span class="n">0</span> <span class="k">then</span>
+			<span class="k">return</span> <span class="k">false</span>
+		<span class="k">end</span>
+		<span class="k">local</span> parent, ok = parentOf(target, path, patch.Kind == <span class="s">"Set"</span>)
+		<span class="k">if</span> <span class="k">not</span> ok <span class="k">then</span>
+			<span class="k">return</span> <span class="k">false</span>
+		<span class="k">end</span>
+		<span class="k">if</span> parent <span class="k">then</span>
+			<span class="k">local</span> key = path[#path]
+			<span class="k">if</span> patch.Kind == <span class="s">"Set"</span> <span class="k">then</span>
+				<span class="c">-- Copied, so the same patch list can be applied to more than one table.</span>
+				parent[key] = copy(patch.Value)
+			<span class="k">else</span>
+				parent[key] = <span class="k">nil</span>
+			<span class="k">end</span>
+		<span class="k">end</span>
+	<span class="k">end</span>
+	<span class="k">return</span> <span class="k">true</span>
+<span class="k">end</span>
+
+<span class="c">-- Server side: the patches since `snapshot`, with the snapshot moved forward to match.</span>
+<span class="c">-- Send them to the client the snapshot belongs to.</span>
+<span class="k">function</span> <span class="f">Diff</span>.<span class="f">Advance</span>(snapshot: Table, live: Table): { Patch }
+	<span class="k">local</span> patches = Diff.Compute(snapshot, live)
+	Diff.Apply(snapshot, patches)
+	<span class="k">return</span> patches
+<span class="k">end</span>
+
+<span class="k">return</span> Diff</code></pre></div>
+        </details>
       </article>
 
       <article class="sys">
         <div class="sys-body">
-          <div class="sys-top"><span class="sys-no">SYSTEM 03</span><span class="sys-meta">13 modules · built on System 02</span></div>
+          <div class="sys-top"><span class="sys-no">SYSTEM 03</span><span class="sys-meta">14 modules · built on System 02</span></div>
           <h3>Economy &amp; Monetization</h3>
           <p class="desc">Coins, Gems, a shop, game passes and developer products. Every purchase is checked on the server, and every developer product is granted exactly once.</p>
           <ul class="feat">
@@ -659,6 +1513,894 @@
 <span class="cmd">&gt; shop: Sword ×2, Crown with 0 Gems</span>
   Ok · LimitReached · NotEnough</pre>
         </div>
+        <details class="src" open>
+          <summary><span><b>TradeService.luau</b> · Player trading</span><span>server · 443 lines · --!strict</span></summary>
+          <div class="src-body"><pre class="src-ln" aria-hidden="true">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443</pre><pre class="src-code"><code><span class="c">--!strict</span>
+<span class="c">-- Player-to-player trading of items and currencies.</span>
+<span class="c">--</span>
+<span class="c">-- A trade moves through Invited -&gt; Open -&gt; Executing -&gt; Closed. What makes it safe:</span>
+<span class="c">--</span>
+<span class="c">--   * Nothing a client says about what it owns is trusted. Each offer is checked against</span>
+<span class="c">--     the player's live data when it's made, and the whole trade is checked again at the</span>
+<span class="c">--     moment it executes, since things can be spent or lost while the window is open.</span>
+<span class="c">--   * Any change to either offer clears both players' Ready and Confirmed, and nobody can</span>
+<span class="c">--     confirm for CONFIRM_DELAY seconds afterwards. That stops the classic scam of</span>
+<span class="c">--     swapping a valuable item for a cheap one just before the other player confirms.</span>
+<span class="c">--   * The swap is all or nothing. Every removal and addition runs with nothing that</span>
+<span class="c">--     yields in between, so no autosave can catch it halfway, and if any step fails the</span>
+<span class="c">--     steps before it are undone in reverse.</span>
+<span class="c">--</span>
+<span class="c">-- Both players are saved straight after the swap, in parallel. Two DataStore keys can't</span>
+<span class="c">-- be written in one atomic step, so a server crash between the two writes could still</span>
+<span class="c">-- leave one side unsaved. Saving both at once keeps that window to a single request.</span>
+<span class="c">--</span>
+<span class="c">-- Clients reach it through one RemoteFunction:</span>
+<span class="c">--   Net.Trade.OnServerInvoke = TradeService.Request</span>
+
+<span class="k">local</span> HttpService = game:GetService(<span class="s">"HttpService"</span>)
+<span class="k">local</span> Players = game:GetService(<span class="s">"Players"</span>)
+<span class="k">local</span> ReplicatedStorage = game:GetService(<span class="s">"ReplicatedStorage"</span>)
+<span class="k">local</span> ServerScriptService = game:GetService(<span class="s">"ServerScriptService"</span>)
+
+<span class="k">local</span> Template = require(ReplicatedStorage.PlayerData.Template)
+<span class="k">local</span> DataService = require(ServerScriptService.PlayerData.DataService)
+<span class="k">local</span> Log = require(script.Parent.Log)
+
+<span class="c">-- Seconds an unanswered invite stays open.</span>
+<span class="k">local</span> INVITE_TIMEOUT = <span class="n">30</span>
+<span class="c">-- Seconds after any change to an offer before either player may confirm.</span>
+<span class="k">local</span> CONFIRM_DELAY = <span class="n">3</span>
+<span class="c">-- Distinct items and currencies one side may put in.</span>
+<span class="k">local</span> MAX_OFFER_ENTRIES = <span class="n">12</span>
+<span class="c">-- Token bucket for trade requests, as in ShopService.</span>
+<span class="k">local</span> RATE_CAPACITY = <span class="n">10</span>
+<span class="k">local</span> RATE_REFILL = <span class="n">4</span>
+
+<span class="k">export</span> <span class="k">type</span> Result =
+	<span class="s">"Ok"</span>
+	| <span class="s">"NotFound"</span>
+	| <span class="s">"Busy"</span>
+	| <span class="s">"NotLoaded"</span>
+	| <span class="s">"BadRequest"</span>
+	| <span class="s">"NotOwned"</span>
+	| <span class="s">"NotReady"</span>
+	| <span class="s">"TooSoon"</span>
+	| <span class="s">"Failed"</span>
+	| <span class="s">"RateLimited"</span>
+	| <span class="s">"Error"</span>
+<span class="k">export</span> <span class="k">type</span> Offer = { Items: { [string]: number }, Currencies: { [string]: number } }
+<span class="k">export</span> <span class="k">type</span> State = <span class="s">"Invited"</span> | <span class="s">"Open"</span> | <span class="s">"Executing"</span> | <span class="s">"Closed"</span>
+<span class="c">-- What one player's client is sent to draw the trade window.</span>
+<span class="k">export</span> <span class="k">type</span> View = {
+	State: State,
+	Partner: Player,
+	Mine: Offer,
+	Theirs: Offer,
+	Ready: boolean,
+	PartnerReady: boolean,
+	Confirmed: boolean,
+	PartnerConfirmed: boolean,
+	LockedFor: number, <span class="c">-- seconds until Confirm is allowed</span>
+}
+
+<span class="k">type</span> Side = { Player: Player, Offer: Offer, Ready: boolean, Confirmed: boolean }
+<span class="k">type</span> Trade = {
+	Id: string,
+	A: Side, <span class="c">-- who sent the invite</span>
+	B: Side,
+	State: State,
+	LockedUntil: number, <span class="c">-- os.clock() before which nobody may confirm</span>
+}
+<span class="c">-- One movement of one item or currency, for one player.</span>
+<span class="k">type</span> Step = { Player: Player, Kind: <span class="s">"Item"</span> | <span class="s">"Currency"</span>, Id: string, Amount: number, Add: boolean }
+<span class="k">type</span> Bucket = { Tokens: number, UpdatedAt: number }
+
+<span class="k">local</span> TradeService = {}
+
+<span class="k">local</span> tradeOf: { [Player]: Trade } = {}
+<span class="k">local</span> buckets: { [Player]: Bucket } = {}
+<span class="k">local</span> changed = Instance.new(<span class="s">"BindableEvent"</span>)
+
+<span class="c">-- Fires with (playerA, playerB, state) whenever a trade changes, so UI can refresh.</span>
+TradeService.Changed = changed.Event
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">newSide</span>(player: Player): Side
+	<span class="k">return</span> { Player = player, Offer = { Items = {}, Currencies = {} }, Ready = <span class="k">false</span>, Confirmed = <span class="k">false</span> }
+<span class="k">end</span>
+
+<span class="c">-- The player's own side of their trade, then the other side.</span>
+<span class="k">local</span> <span class="k">function</span> <span class="f">sides</span>(trade: Trade, player: Player): (Side, Side)
+	<span class="k">if</span> trade.A.Player == player <span class="k">then</span>
+		<span class="k">return</span> trade.A, trade.B
+	<span class="k">end</span>
+	<span class="k">return</span> trade.B, trade.A
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">notify</span>(trade: Trade)
+	changed:Fire(trade.A.Player, trade.B.Player, trade.State)
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">close</span>(trade: Trade, reason: string)
+	<span class="k">if</span> trade.State == <span class="s">"Closed"</span> <span class="k">then</span>
+		<span class="k">return</span>
+	<span class="k">end</span>
+	trade.State = <span class="s">"Closed"</span>
+	<span class="k">for</span> _, side <span class="k">in</span> { trade.A, trade.B } <span class="k">do</span>
+		<span class="k">if</span> tradeOf[side.Player] == trade <span class="k">then</span>
+			tradeOf[side.Player] = <span class="k">nil</span>
+		<span class="k">end</span>
+	<span class="k">end</span>
+	Log.Info(<span class="s">`trade {trade.Id} closed: {reason}`</span>)
+	notify(trade)
+<span class="k">end</span>
+
+<span class="c">-- Something changed, so both players have to look again before they can agree.</span>
+<span class="k">local</span> <span class="k">function</span> <span class="f">reset</span>(trade: Trade)
+	<span class="k">for</span> _, side <span class="k">in</span> { trade.A, trade.B } <span class="k">do</span>
+		side.Ready = <span class="k">false</span>
+		side.Confirmed = <span class="k">false</span>
+	<span class="k">end</span>
+	trade.LockedUntil = os.clock() + CONFIRM_DELAY
+	notify(trade)
+<span class="k">end</span>
+
+<span class="c">-- Whether the player's live data covers their whole offer right now.</span>
+<span class="k">local</span> <span class="k">function</span> <span class="f">covers</span>(player: Player, offer: Offer): boolean
+	<span class="k">local</span> data = DataService.GetData(player)
+	<span class="k">if</span> <span class="k">not</span> data <span class="k">then</span>
+		<span class="k">return</span> <span class="k">false</span>
+	<span class="k">end</span>
+	<span class="k">for</span> item, count <span class="k">in</span> offer.Items <span class="k">do</span>
+		<span class="k">if</span> (data.Inventory[item] <span class="k">or</span> <span class="n">0</span>) &lt; count <span class="k">then</span>
+			<span class="k">return</span> <span class="k">false</span>
+		<span class="k">end</span>
+	<span class="k">end</span>
+	<span class="k">for</span> currency, amount <span class="k">in</span> offer.Currencies <span class="k">do</span>
+		<span class="k">if</span> (data.Currencies[currency] <span class="k">or</span> <span class="n">0</span>) &lt; amount <span class="k">then</span>
+			<span class="k">return</span> <span class="k">false</span>
+		<span class="k">end</span>
+	<span class="k">end</span>
+	<span class="k">return</span> <span class="k">true</span>
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">entries</span>(offer: Offer): number
+	<span class="k">local</span> n = <span class="n">0</span>
+	<span class="k">for</span> _ <span class="k">in</span> offer.Items <span class="k">do</span>
+		n += <span class="n">1</span>
+	<span class="k">end</span>
+	<span class="k">for</span> _ <span class="k">in</span> offer.Currencies <span class="k">do</span>
+		n += <span class="n">1</span>
+	<span class="k">end</span>
+	<span class="k">return</span> n
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">copyOffer</span>(offer: Offer): Offer
+	<span class="k">return</span> { Items = table.clone(offer.Items), Currencies = table.clone(offer.Currencies) }
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">move</span>(player: Player, kind: <span class="s">"Item"</span> | <span class="s">"Currency"</span>, id: string, amount: number, add: boolean): Step
+	<span class="k">return</span> { Player = player, Kind = kind, Id = id, Amount = amount, Add = add }
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">apply</span>(step: Step): boolean
+	<span class="k">if</span> step.Kind == <span class="s">"Item"</span> <span class="k">then</span>
+		<span class="k">if</span> step.Add <span class="k">then</span>
+			<span class="k">return</span> DataService.AddItem(step.Player, step.Id, step.Amount)
+		<span class="k">end</span>
+		<span class="k">return</span> DataService.RemoveItem(step.Player, step.Id, step.Amount)
+	<span class="k">end</span>
+	<span class="k">if</span> step.Add <span class="k">then</span>
+		<span class="k">return</span> DataService.AddCurrency(step.Player, step.Id, step.Amount)
+	<span class="k">end</span>
+	<span class="k">return</span> DataService.SpendCurrency(step.Player, step.Id, step.Amount)
+<span class="k">end</span>
+
+<span class="c">-- The whole swap as a list of steps: take from both sides first, then give to both. A</span>
+<span class="c">-- removal is the step most likely to fail (they no longer own it), and failing before</span>
+<span class="c">-- anyone has been given anything keeps the undo short.</span>
+<span class="k">local</span> <span class="k">function</span> <span class="f">plan</span>(trade: Trade): { Step }
+	<span class="k">local</span> steps: { Step } = {}
+	<span class="k">local</span> <span class="k">function</span> <span class="f">moves</span>(offer: Offer, player: Player, add: boolean)
+		<span class="k">for</span> item, count <span class="k">in</span> offer.Items <span class="k">do</span>
+			table.insert(steps, move(player, <span class="s">"Item"</span>, item, count, add))
+		<span class="k">end</span>
+		<span class="k">for</span> currency, amount <span class="k">in</span> offer.Currencies <span class="k">do</span>
+			table.insert(steps, move(player, <span class="s">"Currency"</span>, currency, amount, add))
+		<span class="k">end</span>
+	<span class="k">end</span>
+	<span class="k">local</span> a, b = trade.A, trade.B
+	moves(a.Offer, a.Player, <span class="k">false</span>)
+	moves(b.Offer, b.Player, <span class="k">false</span>)
+	moves(a.Offer, b.Player, <span class="k">true</span>)
+	moves(b.Offer, a.Player, <span class="k">true</span>)
+	<span class="k">return</span> steps
+<span class="k">end</span>
+
+<span class="k">local</span> <span class="k">function</span> <span class="f">execute</span>(trade: Trade): Result
+	trade.State = <span class="s">"Executing"</span>
+	<span class="k">local</span> a, b = trade.A, trade.B
+	<span class="k">if</span> <span class="k">not</span> covers(a.Player, a.Offer) <span class="k">or</span> <span class="k">not</span> covers(b.Player, b.Offer) <span class="k">then</span>
+		close(trade, <span class="s">"an offer is no longer owned"</span>)
+		<span class="k">return</span> <span class="s">"NotOwned"</span>
+	<span class="k">end</span>
+
+	<span class="c">-- From here to the end of the loop nothing yields, so no save can see half a trade.</span>
+	<span class="k">local</span> steps = plan(trade)
+	<span class="k">for</span> i, step <span class="k">in</span> steps <span class="k">do</span>
+		<span class="k">if</span> <span class="k">not</span> apply(step) <span class="k">then</span>
+			<span class="c">-- Undo in reverse. Each undo puts back exactly what was just moved, so it can't</span>
+			<span class="c">-- hit a cap or a limit that the original step didn't.</span>
+			<span class="k">for</span> j = i - <span class="n">1</span>, <span class="n">1</span>, -<span class="n">1</span> <span class="k">do</span>
+				<span class="k">local</span> done = steps[j]
+				apply(move(done.Player, done.Kind, done.Id, done.Amount, <span class="k">not</span> done.Add))
+			<span class="k">end</span>
+			close(trade, <span class="s">`step {i} ({step.Kind} {step.Id}) failed; rolled back`</span>)
+			<span class="k">return</span> <span class="s">"Failed"</span>
+		<span class="k">end</span>
+	<span class="k">end</span>
+
+	close(trade, <span class="s">"completed"</span>)
+	<span class="c">-- In parallel: both writes finish in the time of one, which keeps the window where</span>
+	<span class="c">-- only one side is saved as short as it can be.</span>
+	task.spawn(DataService.SaveNow, a.Player)
+	task.spawn(DataService.SaveNow, b.Player)
+	<span class="k">return</span> <span class="s">"Ok"</span>
+<span class="k">end</span>
+
+<span class="c">-- Token bucket: each request spends a token, and tokens refill at a steady rate.</span>
+<span class="k">local</span> <span class="k">function</span> <span class="f">allow</span>(player: Player): boolean
+	<span class="k">local</span> now = os.clock()
+	<span class="k">local</span> bucket = buckets[player]
+	<span class="k">if</span> <span class="k">not</span> bucket <span class="k">then</span>
+		bucket = { Tokens = RATE_CAPACITY, UpdatedAt = now }
+		buckets[player] = bucket
+	<span class="k">end</span>
+	bucket.Tokens = math.min(RATE_CAPACITY, bucket.Tokens + (now - bucket.UpdatedAt) * RATE_REFILL)
+	bucket.UpdatedAt = now
+	<span class="k">if</span> bucket.Tokens &lt; <span class="n">1</span> <span class="k">then</span>
+		<span class="k">return</span> <span class="k">false</span>
+	<span class="k">end</span>
+	bucket.Tokens -= <span class="n">1</span>
+	<span class="k">return</span> <span class="k">true</span>
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="f">TradeService</span>.<span class="f">Invite</span>(from: Player, to: Player): Result
+	<span class="k">if</span> from == to <span class="k">or</span> tradeOf[from] <span class="k">or</span> tradeOf[to] <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"Busy"</span>
+	<span class="k">end</span>
+	<span class="k">if</span> <span class="k">not</span> DataService.GetData(from) <span class="k">or</span> <span class="k">not</span> DataService.GetData(to) <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"NotLoaded"</span>
+	<span class="k">end</span>
+	<span class="k">local</span> trade: Trade = {
+		Id = HttpService:GenerateGUID(<span class="k">false</span>),
+		A = newSide(from),
+		B = newSide(to),
+		State = <span class="s">"Invited"</span>,
+		LockedUntil = <span class="n">0</span>,
+	}
+	tradeOf[from] = trade
+	tradeOf[to] = trade
+	<span class="c">-- An unanswered invite closes itself, so nobody is left stuck as busy.</span>
+	task.delay(INVITE_TIMEOUT, <span class="k">function</span>()
+		<span class="k">if</span> trade.State == <span class="s">"Invited"</span> <span class="k">then</span>
+			close(trade, <span class="s">"invite expired"</span>)
+		<span class="k">end</span>
+	<span class="k">end</span>)
+	notify(trade)
+	<span class="k">return</span> <span class="s">"Ok"</span>
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="f">TradeService</span>.<span class="f">Accept</span>(player: Player): Result
+	<span class="k">local</span> trade = tradeOf[player]
+	<span class="k">if</span> <span class="k">not</span> trade <span class="k">or</span> trade.State ~= <span class="s">"Invited"</span> <span class="k">or</span> trade.B.Player ~= player <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"NotFound"</span>
+	<span class="k">end</span>
+	trade.State = <span class="s">"Open"</span>
+	reset(trade)
+	<span class="k">return</span> <span class="s">"Ok"</span>
+<span class="k">end</span>
+
+<span class="c">-- Declines an invite, or walks away from an open trade.</span>
+<span class="k">function</span> <span class="f">TradeService</span>.<span class="f">Cancel</span>(player: Player): Result
+	<span class="k">local</span> trade = tradeOf[player]
+	<span class="k">if</span> <span class="k">not</span> trade <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"NotFound"</span>
+	<span class="k">end</span>
+	close(trade, <span class="s">`cancelled by {player.Name}`</span>)
+	<span class="k">return</span> <span class="s">"Ok"</span>
+<span class="k">end</span>
+
+<span class="c">-- Sets how much of one item or currency the player puts in; 0 takes it back out. The</span>
+<span class="c">-- arguments are `unknown` because they come straight from a client.</span>
+<span class="k">function</span> <span class="f">TradeService</span>.<span class="f">SetOffer</span>(player: Player, kind: unknown, id: unknown, amount: unknown): Result
+	<span class="k">local</span> trade = tradeOf[player]
+	<span class="k">if</span> <span class="k">not</span> trade <span class="k">or</span> trade.State ~= <span class="s">"Open"</span> <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"NotFound"</span>
+	<span class="k">end</span>
+	<span class="k">if</span> typeof(id) ~= <span class="s">"string"</span> <span class="k">or</span> typeof(amount) ~= <span class="s">"number"</span> <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"BadRequest"</span>
+	<span class="k">end</span>
+	<span class="c">-- Whole and not negative. NaN and infinity fail too, because their remainder is NaN.</span>
+	<span class="k">if</span> amount &lt; <span class="n">0</span> <span class="k">or</span> amount % <span class="n">1</span> ~= <span class="n">0</span> <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"BadRequest"</span>
+	<span class="k">end</span>
+
+	<span class="k">local</span> side = sides(trade, player)
+	<span class="k">local</span> section: { [string]: number }
+	<span class="k">if</span> kind == <span class="s">"Item"</span> <span class="k">then</span>
+		section = side.Offer.Items
+	<span class="k">elseif</span> kind == <span class="s">"Currency"</span> <span class="k">and</span> Template.Data.Currencies[id] ~= <span class="k">nil</span> <span class="k">then</span>
+		section = side.Offer.Currencies
+	<span class="k">else</span>
+		<span class="k">return</span> <span class="s">"BadRequest"</span>
+	<span class="k">end</span>
+
+	<span class="k">local</span> previous = section[id]
+	<span class="k">if</span> amount == <span class="n">0</span> <span class="k">then</span>
+		section[id] = <span class="k">nil</span>
+	<span class="k">elseif</span> previous == <span class="k">nil</span> <span class="k">and</span> entries(side.Offer) &gt;= MAX_OFFER_ENTRIES <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"BadRequest"</span>
+	<span class="k">else</span>
+		section[id] = amount
+		<span class="k">if</span> <span class="k">not</span> covers(player, side.Offer) <span class="k">then</span>
+			section[id] = previous
+			<span class="k">return</span> <span class="s">"NotOwned"</span>
+		<span class="k">end</span>
+	<span class="k">end</span>
+	reset(trade)
+	<span class="k">return</span> <span class="s">"Ok"</span>
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="f">TradeService</span>.<span class="f">SetReady</span>(player: Player, ready: unknown): Result
+	<span class="k">local</span> trade = tradeOf[player]
+	<span class="k">if</span> <span class="k">not</span> trade <span class="k">or</span> trade.State ~= <span class="s">"Open"</span> <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"NotFound"</span>
+	<span class="k">end</span>
+	<span class="k">if</span> typeof(ready) ~= <span class="s">"boolean"</span> <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"BadRequest"</span>
+	<span class="k">end</span>
+	<span class="k">local</span> side, other = sides(trade, player)
+	side.Ready = ready
+	<span class="c">-- Taking Ready back also withdraws both confirmations.</span>
+	<span class="k">if</span> <span class="k">not</span> ready <span class="k">then</span>
+		side.Confirmed = <span class="k">false</span>
+		other.Confirmed = <span class="k">false</span>
+	<span class="k">end</span>
+	notify(trade)
+	<span class="k">return</span> <span class="s">"Ok"</span>
+<span class="k">end</span>
+
+<span class="c">-- The trade executes on the second confirmation.</span>
+<span class="k">function</span> <span class="f">TradeService</span>.<span class="f">Confirm</span>(player: Player): Result
+	<span class="k">local</span> trade = tradeOf[player]
+	<span class="k">if</span> <span class="k">not</span> trade <span class="k">or</span> trade.State ~= <span class="s">"Open"</span> <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"NotFound"</span>
+	<span class="k">end</span>
+	<span class="k">local</span> side, other = sides(trade, player)
+	<span class="k">if</span> <span class="k">not</span> side.Ready <span class="k">or</span> <span class="k">not</span> other.Ready <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"NotReady"</span>
+	<span class="k">end</span>
+	<span class="k">if</span> os.clock() &lt; trade.LockedUntil <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"TooSoon"</span>
+	<span class="k">end</span>
+	side.Confirmed = <span class="k">true</span>
+	<span class="k">if</span> <span class="k">not</span> other.Confirmed <span class="k">then</span>
+		notify(trade)
+		<span class="k">return</span> <span class="s">"Ok"</span>
+	<span class="k">end</span>
+	<span class="k">return</span> execute(trade)
+<span class="k">end</span>
+
+<span class="c">-- What the player's client needs to draw the trade window, or nil if they aren't in one.</span>
+<span class="c">-- Offers are copied, so nothing the caller does to the result can change the trade.</span>
+<span class="k">function</span> <span class="f">TradeService</span>.<span class="f">View</span>(player: Player): View?
+	<span class="k">local</span> trade = tradeOf[player]
+	<span class="k">if</span> <span class="k">not</span> trade <span class="k">then</span>
+		<span class="k">return</span> <span class="k">nil</span>
+	<span class="k">end</span>
+	<span class="k">local</span> side, other = sides(trade, player)
+	<span class="k">return</span> {
+		State = trade.State,
+		Partner = other.Player,
+		Mine = copyOffer(side.Offer),
+		Theirs = copyOffer(other.Offer),
+		Ready = side.Ready,
+		PartnerReady = other.Ready,
+		Confirmed = side.Confirmed,
+		PartnerConfirmed = other.Confirmed,
+		LockedFor = math.max(<span class="n">0</span>, trade.LockedUntil - os.clock()),
+	}
+<span class="k">end</span>
+
+<span class="c">-- One entry point for every trade action a client can take. An error here would reach</span>
+<span class="c">-- the client as a failed InvokeServer, so it's answered with a result instead and the</span>
+<span class="c">-- details stay in the server log.</span>
+<span class="k">function</span> <span class="f">TradeService</span>.<span class="f">Request</span>(player: Player, action: unknown, a: unknown, b: unknown, c: unknown): Result
+	<span class="k">if</span> <span class="k">not</span> allow(player) <span class="k">then</span>
+		<span class="k">return</span> <span class="s">"RateLimited"</span>
+	<span class="k">end</span>
+	<span class="k">local</span> result: Result = <span class="s">"Error"</span>
+	<span class="k">local</span> ok = xpcall(<span class="k">function</span>()
+		<span class="k">if</span> action == <span class="s">"Invite"</span> <span class="k">then</span>
+			<span class="c">-- A client can send any Instance. Only a player in this server is a partner.</span>
+			<span class="k">if</span> typeof(a) == <span class="s">"Instance"</span> <span class="k">and</span> a:IsA(<span class="s">"Player"</span>) <span class="k">and</span> a.Parent == Players <span class="k">then</span>
+				result = TradeService.Invite(player, a)
+			<span class="k">else</span>
+				result = <span class="s">"BadRequest"</span>
+			<span class="k">end</span>
+		<span class="k">elseif</span> action == <span class="s">"Accept"</span> <span class="k">then</span>
+			result = TradeService.Accept(player)
+		<span class="k">elseif</span> action == <span class="s">"SetOffer"</span> <span class="k">then</span>
+			result = TradeService.SetOffer(player, a, b, c)
+		<span class="k">elseif</span> action == <span class="s">"SetReady"</span> <span class="k">then</span>
+			result = TradeService.SetReady(player, a)
+		<span class="k">elseif</span> action == <span class="s">"Confirm"</span> <span class="k">then</span>
+			result = TradeService.Confirm(player)
+		<span class="k">elseif</span> action == <span class="s">"Cancel"</span> <span class="k">then</span>
+			result = TradeService.Cancel(player)
+		<span class="k">else</span>
+			result = <span class="s">"BadRequest"</span>
+		<span class="k">end</span>
+	<span class="k">end</span>, <span class="k">function</span>(message: unknown)
+		Log.Warn(<span class="s">`trade request error for {player.Name}: {message}`</span>)
+	<span class="k">end</span>)
+	<span class="k">return</span> <span class="k">if</span> ok <span class="k">then</span> result <span class="k">else</span> <span class="s">"Error"</span>
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="f">TradeService</span>.<span class="f">Start</span>()
+	Players.PlayerRemoving:Connect(<span class="k">function</span>(player: Player)
+		<span class="k">local</span> trade = tradeOf[player]
+		<span class="k">if</span> trade <span class="k">then</span>
+			close(trade, <span class="s">`{player.Name} left`</span>)
+		<span class="k">end</span>
+		buckets[player] = <span class="k">nil</span>
+	<span class="k">end</span>)
+<span class="k">end</span>
+
+<span class="k">return</span> TradeService</code></pre></div>
+        </details>
       </article>
 
     </div>
